@@ -1,6 +1,7 @@
 package com.service;
 
 import com.dto.CreateOrderRequest;
+import com.dto.OrderItemRequest;
 import com.exception.InsufficientStockException;
 import com.exception.InvalidOrderStatusException;
 import com.exception.ResourceNotFoundException;
@@ -34,7 +35,7 @@ public class OrderService {
     public Order createOrder(CreateOrderRequest request, User user) {
         List<OrderItem> orderItems = new ArrayList<>();
         
-        for (CreateOrderRequest.OrderItemRequest itemRequest : request.getOrderItems()) {
+        for (OrderItemRequest itemRequest : request.getOrderItems()) {
             Product product = productRepository.findById(itemRequest.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Product not found with id: " + itemRequest.getProductId()));
