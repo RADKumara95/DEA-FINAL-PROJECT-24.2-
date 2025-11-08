@@ -1179,3 +1179,116 @@ font-size: 14px;
   height: 1px;
   background: var(--hr_line_card)
 }
+
+/* Order Status Timeline Styles */
+.timeline {
+  position: relative;
+  padding: 20px 0;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 50px;
+  width: 2px;
+  height: calc(100% + 10px);
+  background-color: #dee2e6;
+  z-index: 0;
+}
+
+.timeline-item.completed:not(:last-child)::after {
+  background-color: #28a745;
+}
+
+.timeline-item.active:not(:last-child)::after {
+  background: linear-gradient(to bottom, #28a745 0%, #28a745 50%, #dee2e6 50%, #dee2e6 100%);
+}
+
+.timeline-marker {
+  position: relative;
+  z-index: 1;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.timeline-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e9ecef;
+  font-size: 18px;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-item.completed .timeline-icon {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.timeline-item.active .timeline-icon {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+  animation: pulse 2s infinite;
+}
+
+.timeline-item.cancelled .timeline-icon {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+.timeline-content {
+  flex: 1;
+  padding-top: 5px;
+}
+
+.timeline-content h6 {
+  margin: 0;
+  font-weight: 600;
+  color: var(--para-clr);
+}
+
+.timeline-item.completed .timeline-content h6 {
+  color: #28a745;
+}
+
+.timeline-item.active .timeline-content h6 {
+  color: #007bff;
+  font-weight: 700;
+}
+
+.timeline-item.cancelled .timeline-content h6 {
+  color: #dc3545;
+}
+
+.timeline-content small {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.875rem;
+}
