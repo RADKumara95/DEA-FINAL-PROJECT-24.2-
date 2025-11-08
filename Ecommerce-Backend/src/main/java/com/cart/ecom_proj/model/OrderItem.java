@@ -49,5 +49,12 @@ public class OrderItem {
             this.subtotal = priceAtOrder.multiply(BigDecimal.valueOf(quantity));
         }
     }
+    
+    // Public method to calculate and set subtotal manually if needed
+    public void calculateAndSetSubtotal() {
+        if (quantity != null && priceAtOrder != null) {
+            this.subtotal = priceAtOrder.multiply(BigDecimal.valueOf(quantity));
+        }
+    }
 }
 

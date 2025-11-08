@@ -74,7 +74,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
-                .headers(headers -> headers.frameOptions().disable()) // For H2 console
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // For H2 console - allows same origin frames
                 .authenticationProvider(authenticationProvider());
 
         return http.build();
