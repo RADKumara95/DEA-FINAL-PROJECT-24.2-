@@ -259,43 +259,64 @@
 
 
 import React, { useContext, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../Context/AuthContext";
 import AppContext from "../Context/Context";
 import API from "../axios";
 
 const Cart = () => {
-  const { cart, removeFromCart , clearCart } = useContext(AppContext);
+  const { cart, removeFromCart, clearCart } = useContext(AppContext);
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [cartImage, setCartImage] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [stockErrors, setStockErrors] = useState([]);
+  const [validatingStock, setValidatingStock] = useState(false);
 
   useEffect(() => {
     const fetchImagesAndUpdateCart = async () => {
       console.log("Cart", cart);
       try {
         const response = await API.get("/products");
-        const backendProductIds = response.data.map((product) => product.id);
+        const backendProducts = response.data;
+        const backendProductIds = backendProducts.map((product) => product.id);
 
         const updatedCartItems = cart.filter((item) => backendProductIds.includes(item.id));
         const cartItemsWithImages = await Promise.all(
           updatedCartItems.map(async (item) => {
             try {
+              // Get latest product data including stock
+              const productData = backendProducts.find((p) => p.id === item.id);
               const response = await API.get(
                 `/product/${item.id}/image`,
                 { responseType: "blob" }
               );
               const imageFile = await converUrlToFile(response.data, response.data.imageName);
-              setCartImage(imageFile)
+              setCartImage(imageFile);
               const imageUrl = URL.createObjectURL(response.data);
-              return { ...item, imageUrl };
+              return {
+                ...item,
+                imageUrl,
+                stockQuantity: productData?.stockQuantity || item.stockQuantity || 0,
+                productAvailable: productData?.productAvailable !== undefined
+                  ? productData.productAvailable
+                  : item.productAvailable !== undefined
+                  ? item.productAvailable
+                  : true,
+              };
             } catch (error) {
               console.error("Error fetching image:", error);
-              return { ...item, imageUrl: "placeholder-image-url" };
+              return {
+                ...item,
+                imageUrl: "placeholder-image-url",
+                stockQuantity: item.stockQuantity || 0,
+              };
             }
           })
         );
-        console.log("cart",cart)
+        console.log("cart", cart);
         setCartItems(cartItemsWithImages);
       } catch (error) {
         console.error("Error fetching product data:", error);
@@ -304,6 +325,9 @@ const Cart = () => {
 
     if (cart.length) {
       fetchImagesAndUpdateCart();
+    } else {
+      setCartItems([]);
+      setStockErrors([]);
     }
   }, [cart]);
 
@@ -324,7 +348,15 @@ const Cart = () => {
     const newCartItems = cartItems.map((item) => {
       if (item.id === itemId) {
         if (item.quantity < item.stockQuantity) {
-          return { ...item, quantity: item.quantity + 1 };
+          const updatedItem = { ...item, quantity: item.quantity + 1 };
+          // Update cart context
+          const updatedCart = cart.map((cartItem) =>
+            cartItem.id === itemId
+              ? { ...cartItem, quantity: updatedItem.quantity }
+              : cartItem
+          );
+          localStorage.setItem("cart", JSON.stringify(updatedCart));
+          return updatedItem;
         } else {
           alert("Cannot add more than available stock");
         }
@@ -332,22 +364,116 @@ const Cart = () => {
       return item;
     });
     setCartItems(newCartItems);
+    setStockErrors([]); // Clear errors when quantity changes
   };
-  
 
   const handleDecreaseQuantity = (itemId) => {
-    const newCartItems = cartItems.map((item) =>
-      item.id === itemId
-        ? { ...item, quantity: Math.max(item.quantity - 1, 1) }
-        : item
-    );
+    const newCartItems = cartItems.map((item) => {
+      if (item.id === itemId) {
+        const newQuantity = Math.max(item.quantity - 1, 1);
+        const updatedItem = { ...item, quantity: newQuantity };
+        // Update cart context
+        const updatedCart = cart.map((cartItem) =>
+          cartItem.id === itemId
+            ? { ...cartItem, quantity: newQuantity }
+            : cartItem
+        );
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
+        return updatedItem;
+      }
+      return item;
+    });
     setCartItems(newCartItems);
+    setStockErrors([]); // Clear errors when quantity changes
   };
 
   const handleRemoveFromCart = (itemId) => {
     removeFromCart(itemId);
     const newCartItems = cartItems.filter((item) => item.id !== itemId);
     setCartItems(newCartItems);
+    setStockErrors([]);
+  };
+
+  const validateStockAvailability = async () => {
+    setValidatingStock(true);
+    setStockErrors([]);
+    const errors = [];
+
+    try {
+      // Fetch latest product data to ensure we have current stock
+      const response = await API.get("/products");
+      const backendProducts = response.data;
+
+      for (const cartItem of cartItems) {
+        const product = backendProducts.find((p) => p.id === cartItem.id);
+        
+        if (!product) {
+          errors.push({
+            productId: cartItem.id,
+            productName: cartItem.name,
+            message: "Product no longer available",
+          });
+          continue;
+        }
+
+        if (!product.productAvailable) {
+          errors.push({
+            productId: cartItem.id,
+            productName: cartItem.name,
+            message: "Product is currently unavailable",
+          });
+          continue;
+        }
+
+        if (product.stockQuantity < cartItem.quantity) {
+          errors.push({
+            productId: cartItem.id,
+            productName: cartItem.name,
+            message: `Insufficient stock. Available: ${product.stockQuantity}, Requested: ${cartItem.quantity}`,
+            availableStock: product.stockQuantity,
+            requestedQuantity: cartItem.quantity,
+          });
+        }
+      }
+
+      if (errors.length > 0) {
+        setStockErrors(errors);
+        setValidatingStock(false);
+        return false;
+      }
+
+      setValidatingStock(false);
+      return true;
+    } catch (error) {
+      console.error("Error validating stock:", error);
+      setStockErrors([
+        {
+          message: "Failed to validate stock availability. Please try again.",
+        },
+      ]);
+      setValidatingStock(false);
+      return false;
+    }
+  };
+
+  const handleProceedToCheckout = async (e) => {
+    e.preventDefault();
+
+    if (!isAuthenticated) {
+      alert("Please login to proceed to checkout");
+      navigate("/login");
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      alert("Your cart is empty");
+      return;
+    }
+
+    const isValid = await validateStockAvailability();
+    if (isValid) {
+      navigate("/checkout");
+    }
   };
 
   const handleCheckout = async () => {
@@ -454,19 +580,93 @@ const Cart = () => {
                 </div>
               </li>
             ))}
-            <div className="total">Total: ${totalPrice}</div>
-            <Link
-              to="/checkout"
+            <div className="total">Total: ${totalPrice.toFixed(2)}</div>
+            
+            {/* Stock Validation Errors */}
+            {stockErrors.length > 0 && (
+              <div className="alert alert-danger mt-3" role="alert">
+                <strong>Stock Availability Issues:</strong>
+                <ul className="mb-0 mt-2">
+                  {stockErrors.map((error, index) => (
+                    <li key={index}>
+                      {error.productName && (
+                        <strong>{error.productName}:</strong>
+                      )}{" "}
+                      {error.message}
+                      {error.availableStock !== undefined && (
+                        <button
+                          className="btn btn-sm btn-outline-primary ms-2"
+                          onClick={() => {
+                            const item = cartItems.find(
+                              (i) => i.id === error.productId
+                            );
+                            if (item) {
+                              const newCartItems = cartItems.map((cartItem) =>
+                                cartItem.id === error.productId
+                                  ? {
+                                      ...cartItem,
+                                      quantity: error.availableStock,
+                                    }
+                                  : cartItem
+                              );
+                              setCartItems(newCartItems);
+                              // Update cart context
+                              const updatedCart = cart.map((cartItem) =>
+                                cartItem.id === error.productId
+                                  ? { ...cartItem, quantity: error.availableStock }
+                                  : cartItem
+                              );
+                              localStorage.setItem(
+                                "cart",
+                                JSON.stringify(updatedCart)
+                              );
+                              setStockErrors([]);
+                            }
+                          }}
+                        >
+                          Update to {error.availableStock}
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Stock Warnings */}
+            {cartItems.some(
+              (item) => item.stockQuantity <= item.quantity && item.stockQuantity > 0
+            ) && stockErrors.length === 0 && (
+              <div className="alert alert-warning mt-3" role="alert">
+                <strong>⚠️ Low Stock Warning:</strong> Some items in your cart
+                have limited availability. Please proceed to checkout soon.
+              </div>
+            )}
+
+            {/* Proceed to Checkout Button */}
+            <button
+              onClick={handleProceedToCheckout}
               className="btn btn-primary"
               style={{ width: "100%", display: "block", textAlign: "center" }}
+              disabled={validatingStock || cartItems.length === 0}
             >
-              Proceed to Checkout
-            </Link>
+              {validatingStock ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Validating Stock...
+                </>
+              ) : (
+                "Proceed to Checkout"
+              )}
+            </button>
           </>
         )}
       </div>
     </div>
-
   );
 };
 
