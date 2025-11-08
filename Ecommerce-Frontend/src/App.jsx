@@ -12,6 +12,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import Checkout from "./components/Checkout";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
+import AdminOrders from "./components/AdminOrders";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "./Context/Context";
 import { AuthProvider } from "./Context/AuthContext";
@@ -107,6 +108,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <OrderDetails />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <PrivateRoute requiredRoles={["ROLE_ADMIN", "ROLE_SELLER"]}>
+                  <AdminOrders />
                 </PrivateRoute>
               }
             />
