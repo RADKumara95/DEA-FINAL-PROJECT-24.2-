@@ -25,6 +25,10 @@
 - ✅ File upload support (product images with MultipartFile)
 - ✅ CORS enabled for frontend communication
 - ✅ RESTful API endpoints
+- ✅ Spring Security dependency added
+- ✅ Basic Authentication Controller setup
+- ✅ Basic Security Configuration
+- ✅ Test dependencies and basic test setup
 
 ### Frontend
 - ✅ React 18.2.0 with Vite
@@ -44,30 +48,14 @@
 ### 1. User Accounts & Authentication ❌ (HIGH PRIORITY)
 
 #### 1.1 Backend - Spring Security Setup
-- [ ] Add Spring Security dependency to `pom.xml`
-  ```xml
-  <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security</artifactId>
-  </dependency>
-  ```
-- [ ] Create `User` entity in `model` package with fields:
-  - `Long id` (Primary Key, Auto-generated)
-  - `String username` (unique, not null, 3-50 characters)
-  - `String email` (unique, not null, valid email format)
-  - `String password` (not null, BCrypt encoded, min 8 characters)
-  - `String firstName`
-  - `String lastName`
-  - `String phoneNumber` (optional)
-  - `LocalDateTime createdAt` (audit field)
-  - `LocalDateTime updatedAt` (audit field)
-  - `boolean enabled` (for email verification)
-  - `Set<Role> roles` (ManyToMany relationship)
-
-- [ ] Create `Role` entity in `model` package with fields:
-  - `Long id` (Primary Key, Auto-generated)
-  - `String name` (ROLE_USER, ROLE_ADMIN, ROLE_SELLER)
-  - `Set<User> users` (ManyToMany relationship)
+- [✓] Add Spring Security dependency to `pom.xml`
+- [✓] Create `User` entity in `model` package with fields
+- [✓] Create `Role` entity in `model` package with fields
+- [✓] Create `UserRepository` interface extending `JpaRepository<User, Long>`
+- [✓] Create `RoleRepository` interface extending `JpaRepository<Role, Long>`
+- [✓] Create `UserService` class with basic methods
+- [✓] Create `CustomUserDetailsService` implementing `UserDetailsService`
+- [✓] Create basic `SecurityConfig` class
 
 - [ ] Create `UserRepository` interface extending `JpaRepository<User, Long>`
   - Add method: `Optional<User> findByUsername(String username)`
@@ -151,20 +139,80 @@
   INSERT INTO role (name) VALUES ('ROLE_SELLER');
   ```
 
-#### 1.2 Frontend - Authentication UI & Logic
-- [ ] Create `AuthContext.jsx` in `Context` folder for authentication state:
-  - State: `user`, `isAuthenticated`, `loading`, `csrfToken`
-  - Methods: `login(username, password)`, `register(userData)`, `logout()`, `checkAuth()`
-  - Store CSRF token from cookie
-  - Persist auth state check on app load
+### Dependencies to add in `pom.xml`:
+- `spring-boot-starter-security`
+- `jjwt-api`, `jjwt-impl`, `jjwt-jackson` (for JWT)
+- `bucket4j-core` (for rate limiting)
+- `dev.samstevens.totp:totp` (for 2FA)
+- `spring-boot-starter-oauth2-client` (for social login)
 
-- [ ] Create `Login.jsx` component in `components` folder:
-  - Form fields: username, password
-  - Form validation with error messages
-  - Submit handler to call login API
-  - Redirect to home on successful login
-  - Link to registration page
-  - Display backend error messages
+### Core Requirements:
+ **SecurityConfig** (`@Configuration`, `@EnableWebSecurity`, `@EnableMethodSecurity`)
+   - Use `SecurityFilterChain` with:
+     - `sessionCreationPolicy(IF_REQUIRED)` and `maximumSessions(1)`
+     - CSRF with `CookieCsrfTokenRepository.withHttpOnlyFalse()`
+     - Public endpoints: `/api/auth/**`, `/api/products`, `/api/product/**`, `/api/auth/verify`, `/api/auth/oauth2/**`
+     - Protected: `/api/orders/**` (authenticated), `/api/product` POST/PUT/DELETE (ADMIN/SELLER)
+   - Configure CORS for `http://localhost:5173` with credentials
+   - Add `RateLimitingFilter` before authentication filters
+   - Add `JwtAuthenticationFilter` **only if `auth.mode=jwt`**
+
+ **Hybrid Auth Support**:
+   - Add `application.properties` flag: `auth.mode=session` (default) or `jwt`
+   - Create `JwtTokenProvider` with `generateToken()`, `validateToken()`, `getAuthentication()`
+   - Create `RefreshToken` entity + repository
+   - Endpoints: `POST /api/auth/token` (issue JWT), `POST /api/auth/refresh`
+
+ **Email Verification with Expiry**:
+   - Add to `User` entity: `verificationToken`, `verificationTokenExpiry`
+   - Generate 24-hour UUID token on registration
+   - Endpoints: `GET /api/auth/verify?token=...`, `POST /api/auth/resend-verification`
+
+ **2FA with TOTP**:
+   - Add to `User`: `twoFactorEnabled`, `totpSecret`
+   - `TwoFactorAuthService`: generate secret, QR code URL, verify code
+   - Endpoints: `GET /api/auth/2fa/setup`, `POST /api/auth/2fa/verify`, `POST /api/auth/2fa/enable`
+
+ **OAuth2 Social Login**:
+   - Configure Google & GitHub in `application.properties`
+   - Handle callback at `/api/auth/oauth2/success`
+   - Link or create user based on `email` or `providerId`
+
+ **Rate Limiting**:
+   - Use Bucket4j to limit `/api/auth/login` and `/api/auth/register` to **5 requests/min per IP**
+   - Return `429 Too Many Requests` with `Retry-After`
+
+ **Account Lockout**:
+   - Add to `User`: `failedLoginAttempts`, `lockoutTime`
+   - Lock after 5 failed attempts for 30 minutes
+   - Endpoint: `POST /api/auth/unlock` (admin only)
+
+ **Password Policy + History**:
+   - Create `PasswordHistory` entity
+   - Enforce: 8+ chars, upper, lower, digit, special char
+   - Prevent reuse of last 3 passwords
+
+ **Auth Audit Logging**:
+   - Create `AuthAuditLog` entity (username, event, IP, timestamp)
+   - Use Spring AOP to log: login, logout, register, failed login, lockout
+   - Admin endpoint: `GET /api/admin/audit-logs` (paginated)
+
+### Additional Config:
+- Session cookies: `httpOnly=true`, `sameSite=lax`, `timeout=30m`
+- Production profile (`application-prod.properties`): `secure=true`, `sameSite=strict`
+- Enable `@PreAuthorize` with `@EnableMethodSecurity`
+- Insert default roles in `data.sql`
+
+Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Generate all required classes: `SecurityConfig`, `JwtTokenProvider`, `RateLimitingFilter`, `TwoFactorAuthService`, `AuthAuditLog`, `PasswordPolicyValidator`, and updated `User` entity.
+
+
+#### 1.2 Frontend - Authentication UI & Logic
+- [✓] Create `AuthContext.jsx` in `Context` folder for authentication state
+- [✓] Create `Login.jsx` component with form fields and validation
+- [✓] Create `Register.jsx` component with registration form
+- [✓] Create `Profile.jsx` component
+- [✓] Create `PrivateRoute.jsx` component
+- [✓] Update `axios.jsx` with auth configuration
 
 - [ ] Create `Register.jsx` component in `components` folder:
   - Form fields: username, email, password, confirmPassword, firstName, lastName, phoneNumber
@@ -207,23 +255,22 @@
 
 ---
 
-### 2. Domain Features - Second Entity with Relationships ❌ (HIGH PRIORITY)
+### 2. Domain Features - Second Entity with Relationships ✅ (COMPLETED)
 
-#### 2.1 Create Order Entity and Relationships
-- [ ] Create `Order` entity in `model` package with fields:
-  - `Long id` (Primary Key, Auto-generated)
-  - `User user` (ManyToOne relationship, fetch EAGER)
-  - `LocalDateTime orderDate` (not null, auto-set on creation)
-  - `OrderStatus status` (enum: PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED)
-  - `BigDecimal totalAmount` (not null, calculated from order items)
-  - `String shippingAddress` (not null)
-  - `String billingAddress`
-  - `String phoneNumber` (not null)
-  - `String notes` (optional customer notes)
-  - `LocalDateTime deliveryDate` (nullable)
-  - `List<OrderItem> orderItems` (OneToMany relationship, cascade ALL, orphanRemoval true)
-  - `PaymentMethod paymentMethod` (enum: CASH_ON_DELIVERY, CREDIT_CARD, DEBIT_CARD, UPI, NET_BANKING)
-  - `PaymentStatus paymentStatus` (enum: PENDING, PAID, FAILED, REFUNDED)
+#### 2.1 Order Entity and Relationships
+- [✓] Create `Order` entity with all required fields
+- [✓] Create `OrderItem` entity with relationships
+- [✓] Create `OrderStatus`, `PaymentMethod`, and `PaymentStatus` enums
+- [✓] Update `Product` entity with order relationships
+- [✓] Update `User` entity with order relationships
+- [✓] Create `OrderRepository` and `OrderService`
+- [✓] Implement order management endpoints in controller
+- [✓] Create order-related DTOs
+- [✓] Implement frontend components for orders
+  - [✓] OrderList.jsx
+  - [✓] OrderDetails.jsx
+  - [✓] Checkout.jsx
+- [✓] Add order-related routes and navigation
 
 - [ ] Create `OrderItem` entity in `model` package with fields:
   - `Long id` (Primary Key, Auto-generated)
@@ -354,14 +401,20 @@
 
 ---
 
-### 3. Pagination & Sorting ✅ (PARTIAL) / ❌ (NEEDS COMPLETION)
+### 3. Pagination & Sorting ✅ (COMPLETED)
 
-#### 3.1 Backend Pagination Enhancement
-- [ ] Update `ProductRepository`:
-  - Methods already use `JpaRepository` which supports `Pageable`
-  - Add method: `Page<Product> findByCategory(String category, Pageable pageable)`
-  - Add method: `Page<Product> findByBrand(String brand, Pageable pageable)`
-  - Add method: `Page<Product> findByPriceBeteen(BigDecimal min, BigDecimal max, Pageable pageable)`
+#### 3.1 Backend Pagination Implementation
+- [✓] Update `ProductRepository` with pageable methods:
+  - [✓] Basic JpaRepository pagination
+  - [✓] Category-based pagination
+  - [✓] Search with pagination
+  - [✓] Filter with pagination
+- [✓] Update `OrderRepository` with pageable methods
+- [✓] Implement paginated endpoints in controllers
+- [✓] Create reusable `Pagination.jsx` component
+- [✓] Add pagination to product listing
+- [✓] Add pagination to order listing
+- [✓] Add sorting functionality
 
 - [ ] Update `ProductService`:
   - Add method: `Page<Product> getAllProductsPaginated(int page, int size, String sortBy, String sortDir)`
@@ -401,16 +454,16 @@
 
 ---
 
-### 4. Validation & Error Handling ❌ (HIGH PRIORITY)
+### 4. Validation & Error Handling ✅ (COMPLETED)
 
 #### 4.1 Backend Validation
-- [ ] Add validation dependency to `pom.xml` (already present in Spring Boot Starter):
-  ```xml
-  <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-validation</artifactId>
-  </dependency>
-  ```
+- [✓] Add validation dependencies
+- [✓] Implement entity validation annotations
+- [✓] Add controller validation
+- [✓] Implement global exception handling
+- [✓] Create custom exceptions
+- [✓] Add frontend form validation
+- [✓] Add error message display
 
 - [ ] Add validation annotations to `Product` entity:
   - `@NotBlank(message = "Product name is required")` on `name`
@@ -543,14 +596,15 @@
 
 ---
 
-### 5. CSRF Protection ❌ (HIGH PRIORITY)
+### 5. CSRF Protection ✅ (COMPLETED)
 
-#### 5.1 Backend CSRF Configuration
-- [ ] Update `SecurityConfig`:
-  - Enable CSRF protection with `csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))`
-  - Configure CSRF token repository to use cookies
-  - Expose CSRF token in cookie with name `XSRF-TOKEN`
-  - Add `CsrfFilter` to filter chain
+#### 5.1 Security Configuration
+- [✓] Implement CSRF protection in SecurityConfig
+- [✓] Configure CSRF token repository
+- [✓] Set up CSRF token cookie
+- [✓] Add CSRF headers to CORS configuration
+- [✓] Implement frontend CSRF handling
+- [✓] Add CSRF token to axios requests
 
 - [ ] Create `CsrfController` to expose CSRF token:
   - `GET /api/csrf` - returns CSRF token for initial page load
