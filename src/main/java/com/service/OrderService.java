@@ -174,6 +174,13 @@ public class OrderService {
         }
     }
 
+    /**
+     * Get OrderRepository (for controller access)
+     */
+    public OrderRepository getOrderRepository() {
+        return orderRepository;
+    }
+
     private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
         switch (currentStatus) {
             case PENDING:
