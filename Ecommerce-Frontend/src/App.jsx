@@ -15,6 +15,7 @@ import OrderDetails from "./components/OrderDetails";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "./Context/Context";
 import { AuthProvider } from "./Context/AuthContext";
+import { OrderProvider } from "./Context/OrderContext";
 import UpdateProduct from "./components/UpdateProduct";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -46,7 +47,8 @@ function App() {
   return (
     <AuthProvider>
       <AppProvider>
-        <BrowserRouter>
+        <OrderProvider>
+          <BrowserRouter>
           <Navbar onSelectCategory={handleCategorySelect} />
           <Routes>
             <Route
@@ -110,6 +112,7 @@ function App() {
             />
           </Routes>
         </BrowserRouter>
+        </OrderProvider>
       </AppProvider>
     </AuthProvider>
   );
