@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class AdminOrderController {
      * GET /api/admin/orders - Get all orders (admin only) with pagination, filtering by status
      */
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
     public ResponseEntity<?> getAllOrders(
             @RequestHeader(value = "X-Is-Admin", required = false, defaultValue = "false") boolean isAdmin,
             @RequestParam(defaultValue = "0") int page,
@@ -76,6 +78,7 @@ public class AdminOrderController {
      * PUT /api/admin/orders/{id}/status - Update order status (admin/seller only)
      */
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
     public ResponseEntity<?> updateOrderStatus(
             @PathVariable Long id,
             @Valid @RequestBody UpdateOrderStatusRequest request,
@@ -121,6 +124,7 @@ public class AdminOrderController {
      * DELETE /api/admin/orders/{id} - Delete order (admin only)
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteOrder(
             @PathVariable Long id,
             @RequestHeader(value = "X-Is-Admin", required = false, defaultValue = "false") boolean isAdmin) {

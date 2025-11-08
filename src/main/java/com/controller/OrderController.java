@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,6 +38,7 @@ public class OrderController {
      * POST /api/orders - Create new order (authenticated users)
      */
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createOrder(
             @Valid @RequestBody CreateOrderRequest request,
             @RequestHeader(value = "X-User-Id", required = false) Long userId) {
@@ -70,6 +72,7 @@ public class OrderController {
      * GET /api/orders - Get current user's orders with pagination & sorting
      */
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getUserOrders(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
             @RequestParam(defaultValue = "0") int page,
@@ -100,6 +103,7 @@ public class OrderController {
      * GET /api/orders/{id} - Get specific order details (owner or admin)
      */
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getOrderById(
             @PathVariable Long id,
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
@@ -131,6 +135,7 @@ public class OrderController {
      * PUT /api/orders/{id}/cancel - Cancel order (owner or admin)
      */
     @PutMapping("/{id}/cancel")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> cancelOrder(
             @PathVariable Long id,
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
