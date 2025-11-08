@@ -195,18 +195,14 @@ public class Order {
         this.paymentStatus = paymentStatus;
     }
 
-    /**
-     * Add order item and update total
-     */
+   
     public void addOrderItem(OrderItem orderItem) {
         orderItems.add(orderItem);
         orderItem.setOrder(this);
         calculateTotalAmount();
     }
 
-    /**
-     * Remove order item and update total
-     */
+
     public void removeOrderItem(OrderItem orderItem) {
         orderItems.remove(orderItem);
         orderItem.setOrder(null);
