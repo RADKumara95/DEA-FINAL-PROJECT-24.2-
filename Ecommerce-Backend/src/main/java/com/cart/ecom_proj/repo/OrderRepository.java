@@ -12,10 +12,10 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order> findByUserIdOrderByOrderDateDesc(Long userId);
-    List<Order> findByUserIdAndStatus(Long userId, OrderStatus status);
-    Page<Order> findByUserId(Long userId, Pageable pageable);
-    Page<Order> findByStatus(OrderStatus status, Pageable pageable);
-    List<Order> findByOrderDateBetween(LocalDateTime start, LocalDateTime end);
+    List<Order> findByUserIdAndDeletedFalseOrderByOrderDateDesc(Long userId);
+    List<Order> findByUserIdAndStatusAndDeletedFalse(Long userId, OrderStatus status);
+    Page<Order> findByUserIdAndDeletedFalse(Long userId, Pageable pageable);
+    Page<Order> findByStatusAndDeletedFalse(OrderStatus status, Pageable pageable);
+    List<Order> findByOrderDateBetweenAndDeletedFalse(LocalDateTime start, LocalDateTime end);
 }
 

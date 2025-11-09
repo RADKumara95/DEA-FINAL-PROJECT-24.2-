@@ -19,23 +19,33 @@ public interface ProductRepo extends JpaRepository<Product, Integer> {
             "LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(p.brand) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(p.category) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Product> searchProducts(String keyword);
+        @Query("SELECT p FROM Product p WHERE (" +
+                        "LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                        "LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                        "LOWER(p.brand) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                        "LOWER(p.category) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND p.deleted = false")
+        List<Product> searchProducts(String keyword);
 
     @Query("SELECT p FROM Product p WHERE " +
             "LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(p.brand) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(p.category) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    Page<Product> searchProductsPaginated(String keyword, Pageable pageable);
+        @Query("SELECT p FROM Product p WHERE (" +
+                        "LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                        "LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                        "LOWER(p.brand) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                        "LOWER(p.category) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND p.deleted = false")
+        Page<Product> searchProductsPaginated(String keyword, Pageable pageable);
 
-    Page<Product> findByCategory(String category, Pageable pageable);
+        Page<Product> findByCategoryAndDeletedFalse(String category, Pageable pageable);
 
-    Page<Product> findByBrand(String brand, Pageable pageable);
+        Page<Product> findByBrandAndDeletedFalse(String brand, Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.price BETWEEN :minPrice AND :maxPrice")
-    Page<Product> findByPriceBetween(@Param("minPrice") BigDecimal minPrice, 
-                                      @Param("maxPrice") BigDecimal maxPrice, 
-                                      Pageable pageable);
+        @Query("SELECT p FROM Product p WHERE p.price BETWEEN :minPrice AND :maxPrice AND p.deleted = false")
+        Page<Product> findByPriceBetween(@Param("minPrice") BigDecimal minPrice, 
+                                                                          @Param("maxPrice") BigDecimal maxPrice, 
+                                                                          Pageable pageable);
 
     @Query("SELECT p FROM Product p WHERE " +
             "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
@@ -47,7 +57,17 @@ public interface ProductRepo extends JpaRepository<Product, Integer> {
             "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
             "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
             "(:available IS NULL OR p.productAvailable = :available)")
-    Page<Product> advancedSearch(
+        @Query("SELECT p FROM Product p WHERE (" +
+                        "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                        "LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                        "LOWER(p.brand) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                        "LOWER(p.category) LIKE LOWER(:category))) AND " +
+                        "(:category IS NULL OR LOWER(p.category) = LOWER(:category)) AND " +
+                        "(:brand IS NULL OR LOWER(p.brand) = LOWER(:brand)) AND " +
+                        "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
+                        "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
+                        "(:available IS NULL OR p.productAvailable = :available) AND p.deleted = false")
+        Page<Product> advancedSearch(
             @Param("keyword") String keyword,
             @Param("category") String category,
             @Param("brand") String brand,
