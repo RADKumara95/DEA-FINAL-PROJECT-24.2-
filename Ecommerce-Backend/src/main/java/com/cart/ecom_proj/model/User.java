@@ -10,7 +10,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.hibernate.annotations.Where;
+import com.cart.ecom_proj.model.SoftDeletable;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,7 +28,8 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class User {
+@Where(clause = "deleted = false")
+public class User implements SoftDeletable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -57,6 +62,16 @@ public class User {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @CreatedBy
+    private String createdBy;
+
+    @LastModifiedBy
+    private String updatedBy;
+
+    private boolean deleted = false;
+    private LocalDateTime deletedAt;
+    private String deletedBy;
+
     @Column(nullable = false)
     private boolean enabled = true;
 
@@ -70,5 +85,34 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
+
+    @Override
+    public void delete(String deletedBy) {
+        this.deleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+    }
+
+    @Override
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void restore() {
+        this.deleted = false;
+        this.deletedAt = null;
+        this.deletedBy = null;
+    }
+
+    @Override
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    @Override
+    public String getDeletedBy() {
+        return deletedBy;
+    }
 }
 
