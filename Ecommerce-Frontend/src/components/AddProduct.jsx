@@ -13,6 +13,8 @@ const AddProduct = () => {
     productAvailable: false,
   });
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [errors, setErrors] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -20,12 +22,40 @@ const AddProduct = () => {
   };
 
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const newErrors = [];
+
+    if (!allowedTypes.includes(file.type)) {
+      newErrors.push("Invalid file type. Only JPG, PNG and WEBP are allowed.");
+    }
+    if (file.size > maxSize) {
+      newErrors.push("File size exceeds 5MB.");
+    }
+
+    if (newErrors.length) {
+      setErrors(newErrors);
+      setImage(null);
+      setImagePreview(null);
+      return;
+    }
+
+    setErrors([]);
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
     // setProduct({...product, image: e.target.files[0]})
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
+    if (errors.length) {
+      alert('Please fix image validation errors before submitting');
+      return;
+    }
+
     const formData = new FormData();
     formData.append("imageFile", image);
     formData.append(
@@ -45,7 +75,7 @@ const AddProduct = () => {
       })
       .catch((error) => {
         console.error("Error adding product:", error);
-        alert("Error adding product");
+        alert("Error adding product: " + (error.response?.data?.message || error.message));
       });
   };
 
@@ -167,8 +197,21 @@ const AddProduct = () => {
           <input
             className="form-control"
             type="file"
+            accept="image/*"
             onChange={handleImageChange}
           />
+          {imagePreview && (
+            <div className="mt-2">
+              <img src={imagePreview} alt="preview" style={{ maxWidth: '100%', maxHeight: 200 }} />
+            </div>
+          )}
+          {errors.length > 0 && (
+            <div className="mt-2 text-danger">
+              {errors.map((err, idx) => (
+                <div key={idx}>{err}</div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="col-12">
           <div className="form-check">
@@ -189,7 +232,6 @@ const AddProduct = () => {
           <button
             type="submit"
             className="btn btn-primary"
-            // onClick={submitHandler}
           >
             Submit
           </button>

@@ -6,6 +6,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 @Service
 public class FileValidationService {
@@ -26,21 +29,18 @@ public class FileValidationService {
 
     public void validateImageFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            return; // Optional file, so empty is okay
+            return; 
         }
 
-        // Validate file size
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new BadRequestException("File size exceeds maximum allowed size of 5MB");
         }
 
-        // Validate content type
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
             throw new BadRequestException("Invalid file type. Only JPG, PNG, and WEBP images are allowed");
         }
 
-        // Validate file extension
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null) {
             throw new BadRequestException("File name is required");
@@ -49,6 +49,21 @@ public class FileValidationService {
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
             throw new BadRequestException("Invalid file extension. Only .jpg, .jpeg, .png, and .webp are allowed");
+        }
+
+        try {
+            BufferedImage img = ImageIO.read(file.getInputStream());
+            if (img == null) {
+                throw new BadRequestException("Uploaded file is not a valid image");
+            }
+            int width = img.getWidth();
+            int height = img.getHeight();
+            int maxDim = 8000; 
+            if (width > maxDim || height > maxDim) {
+                throw new BadRequestException("Image dimensions are too large");
+            }
+        } catch (IOException e) {
+            throw new BadRequestException("Unable to read image file");
         }
     }
 }
