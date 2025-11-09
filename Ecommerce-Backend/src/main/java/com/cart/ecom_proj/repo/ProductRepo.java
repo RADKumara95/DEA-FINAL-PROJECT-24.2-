@@ -55,4 +55,11 @@ public interface ProductRepo extends JpaRepository<Product, Integer> {
             @Param("maxPrice") BigDecimal maxPrice,
             @Param("available") Boolean available,
             Pageable pageable);
+            @Param("keyword") String keyword,
+            @Param("category") String category,
+            @Param("brand") String brand,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("available") Boolean available,
+            Pageable pageable);
 }
