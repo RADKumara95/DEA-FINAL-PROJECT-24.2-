@@ -325,7 +325,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/products/advanced-search?name=test&category=Electronics&brand=TestBrand&minPrice=50&maxPrice=200",
+							"raw": "{{baseUrl}}/api/products/advanced-search?keyword=test&category=Electronics&brand=TestBrand&minPrice=50&maxPrice=200",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -336,7 +336,7 @@
 							],
 							"query": [
 								{
-									"key": "name",
+									"key": "keyword",
 									"value": "test"
 								},
 								{
