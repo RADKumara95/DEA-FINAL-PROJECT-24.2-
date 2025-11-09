@@ -411,9 +411,11 @@ const Cart = () => {
     const errors = [];
 
     try {
-      // Fetch latest product data to ensure we have current stock
-      const response = await API.get("/products");
-      const backendProducts = response.data;
+      // Fetch latest product data to ensure we have current stock (get all products)
+      const response = await API.get("/products?page=0&size=1000");
+      const backendProducts = response.data.content || response.data || [];
+      console.log("🔍 Validating stock for cart items:", cartItems.length);
+      console.log("🔍 Backend products fetched:", backendProducts.length);
 
       for (const cartItem of cartItems) {
         const product = backendProducts.find((p) => p.id === cartItem.id);
