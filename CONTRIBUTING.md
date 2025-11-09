@@ -337,9 +337,10 @@ npm run lint                     # Code linting
 - **Code Reviews**: Through pull request comments
 
 ### Team Members
-- **Pruthivi Thejan** - Full Stack Developer
-- **Ravi Ranasinghe** - Full Stack Developer
-- **Pasindu Madusanka** - Full Stack Developer
+- RAD kumara
+- RARJ ranasinghe
+- Adhikari AMD
+- HCS Dilruk
 
 ## Recognition
 
