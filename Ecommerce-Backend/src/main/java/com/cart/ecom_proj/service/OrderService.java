@@ -176,10 +176,11 @@ public class OrderService {
     }
 
     public void deleteOrder(Long id) {
-        if (!orderRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Order not found with id: " + id);
-        }
-        orderRepository.deleteById(id);
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+        // Soft delete: mark as deleted instead of physically removing from DB
+        order.setDeleted(true);
+        orderRepository.save(order);
     }
 }
 

@@ -414,13 +414,13 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 - [✓] Add pagination to order listing
 - [✓] Add sorting functionality
 
-- [ ] Update `ProductService`:
+- [✓] Update `ProductService`:
   - Add method: `Page<Product> getAllProductsPaginated(int page, int size, String sortBy, String sortDir)`
   - Add method: `Page<Product> searchProductsPaginated(String keyword, int page, int size, String sortBy)`
   - Add method: `Page<Product> filterProductsByCategoryPaginated(String category, int page, int size)`
   - Add method: `Page<Product> filterProductsByPriceRange(BigDecimal min, BigDecimal max, int page, int size)`
 
-- [ ] Update `ProductController`:
+- [✓] Update `ProductController`:
   - Modify `GET /api/products` to accept pagination parameters:
     - `@RequestParam(defaultValue = "0") int page`
     - `@RequestParam(defaultValue = "12") int size`
@@ -431,13 +431,13 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Add `GET /api/products/filter` for advanced filtering with pagination
 
 #### 3.2 Frontend Pagination UI
-- [ ] Create `Pagination.jsx` reusable component:
+- [✓] Create `Pagination.jsx` reusable component:
   - Props: currentPage, totalPages, onPageChange
   - Display page numbers with prev/next buttons
   - Highlight current page
   - Disable prev on first page, next on last page
 
-- [ ] Update `Home.jsx`:
+- [✓] Update `Home.jsx`:
   - Add state for pagination: `currentPage`, `totalPages`, `pageSize`
   - Add state for sorting: `sortBy`, `sortDir`
   - Fetch paginated products from API
@@ -446,7 +446,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Add page size selector (12, 24, 48 items per page)
   - Update URL query parameters on page/sort change
 
-- [ ] Update `Context.jsx`:
+- [✓] Update `Context.jsx`:
   - Modify `refreshData()` to accept pagination and sorting parameters
   - Store pagination metadata in context
 
@@ -463,7 +463,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 - [✓] Add frontend form validation
 - [✓] Add error message display
 
-- [ ] Add validation annotations to `Product` entity:
+- [✓] Add validation annotations to `Product` entity:
   - `@NotBlank(message = "Product name is required")` on `name`
   - `@Size(min = 10, max = 500, message = "Description must be between 10 and 500 characters")` on `description`
   - `@NotBlank(message = "Brand is required")` on `brand`
@@ -473,7 +473,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - `@NotNull(message = "Release date is required")` on `releaseDate`
   - `@Min(value = 0, message = "Stock quantity cannot be negative")` on `stockQuantity`
 
-- [ ] Add validation annotations to `User` entity:
+- [✓] Add validation annotations to `User` entity:
   - `@NotBlank(message = "Username is required")` on `username`
   - `@Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")` on `username`
   - `@NotBlank(message = "Email is required")` on `email`
@@ -482,7 +482,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - `@Size(min = 8, message = "Password must be at least 8 characters")` on `password`
   - `@Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits")` on `phoneNumber`
 
-- [ ] Add validation annotations to `Order` entity:
+- [✓] Add validation annotations to `Order` entity:
   - `@NotNull(message = "User is required")` on `user`
   - `@NotNull(message = "Order date is required")` on `orderDate`
   - `@NotNull(message = "Total amount is required")` on `totalAmount`
@@ -491,12 +491,12 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - `@NotBlank(message = "Phone number is required")` on `phoneNumber`
   - `@NotEmpty(message = "Order must have at least one item")` on `orderItems`
 
-- [ ] Add validation annotations to `OrderItem` entity:
+- [✓] Add validation annotations to `OrderItem` entity:
   - `@NotNull(message = "Product is required")` on `product`
   - `@NotNull(message = "Quantity is required")` on `quantity`
   - `@Min(value = 1, message = "Quantity must be at least 1")` on `quantity`
 
-- [ ] Add `@Valid` annotation to controller method parameters:
+- [✓] Add `@Valid` annotation to controller method parameters:
   - `ProductController.addProduct(@Valid @RequestPart Product product, ...)`
   - `ProductController.updateProduct(..., @Valid @RequestPart Product product, ...)`
   - `AuthController.register(@Valid @RequestBody RegisterRequest request)`
@@ -504,14 +504,14 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - `OrderController.createOrder(@Valid @RequestBody CreateOrderRequest request)`
 
 #### 4.2 Centralized Error Handling
-- [ ] Create `ErrorResponse` DTO class:
+- [✓] Create `ErrorResponse` DTO class:
   - `String message`
   - `int status`
   - `LocalDateTime timestamp`
   - `Map<String, String> validationErrors` (for field-level errors)
   - `String path` (request URI)
 
-- [ ] Create `GlobalExceptionHandler` class with `@ControllerAdvice`:
+- [✓] Create `GlobalExceptionHandler` class with `@ControllerAdvice`:
   - Handle `MethodArgumentNotValidException` (Bean Validation errors):
     - Extract field errors
     - Return `ErrorResponse` with status 400 and field-level errors
@@ -533,7 +533,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
     - Log error details
     - Return `ErrorResponse` with status 500 and generic message
 
-- [ ] Create custom exception classes in `exception` package:
+- [✓] Create custom exception classes in `exception` package:
   - `ResourceNotFoundException` extends `RuntimeException`
   - `DuplicateResourceException` extends `RuntimeException`
   - `UnauthorizedException` extends `RuntimeException`
@@ -541,7 +541,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - `BadRequestException` extends `RuntimeException`
   - `InsufficientStockException` extends `RuntimeException`
 
-- [ ] Update service methods to throw appropriate exceptions:
+- [✓] Update service methods to throw appropriate exceptions:
   - `ProductService.getProductById()` - throw `ResourceNotFoundException` if not found
   - `ProductService.updateProduct()` - throw `ResourceNotFoundException` if not found
   - `ProductService.deleteProduct()` - throw `ResourceNotFoundException` if not found
@@ -549,31 +549,31 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - `UserService.registerUser()` - throw `DuplicateResourceException` if username/email exists
   - `OrderService.getOrderById()` - throw `ForbiddenException` if user doesn't own order
 
-- [ ] Configure file upload limits in `application.properties`:
+- [✓] Configure file upload limits in `application.properties`:
   ```properties
   spring.servlet.multipart.max-file-size=5MB
   spring.servlet.multipart.max-request-size=10MB
   ```
 
 #### 4.3 Frontend Error Handling
-- [ ] Create `ErrorBoundary.jsx` component:
+- [✓] Create `ErrorBoundary.jsx` component:
   - Catch React errors
   - Display friendly error message
   - Option to reload page
 
-- [ ] Create `ErrorMessage.jsx` reusable component:
+- [✓] Create `ErrorMessage.jsx` reusable component:
   - Props: message, type (error/warning/info)
   - Display formatted error message with icon
   - Auto-dismiss after 5 seconds (optional)
 
-- [ ] Update all form components to display validation errors:
+- [✓] Update all form components to display validation errors:
   - `Login.jsx` - show backend validation errors
   - `Register.jsx` - show both client-side and backend errors
   - `AddProduct.jsx` - show validation errors for each field
   - `UpdateProduct.jsx` - show validation errors
   - `Checkout.jsx` - show validation errors
 
-- [ ] Update `axios.jsx` interceptors:
+- [✓] Update `axios.jsx` interceptors:
   - Response interceptor to handle errors globally
   - Extract error message from response
   - Display toast/alert for errors
@@ -582,11 +582,11 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Handle 404 by showing "Not Found" message
   - Handle 500 by showing "Server Error" message
 
-- [ ] Add validation libraries:
+- [✓] Add validation libraries:
   - Install `react-hook-form` for form validation: `npm install react-hook-form`
   - Install `yup` for schema validation: `npm install yup @hookform/resolvers`
 
-- [ ] Update forms to use `react-hook-form`:
+- [✓] Update forms to use `react-hook-form`:
   - `Login.jsx` - validate username and password
   - `Register.jsx` - validate all fields with yup schema
   - `AddProduct.jsx` - validate product fields
