@@ -12,9 +12,11 @@ import PrivateRoute from "./components/PrivateRoute";
 import Checkout from "./components/Checkout";
 import OrderList from "./components/OrderList";
 import OrderDetails from "./components/OrderDetails";
+import AdminOrders from "./components/AdminOrders";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "./Context/Context";
 import { AuthProvider } from "./Context/AuthContext";
+import { OrderProvider } from "./Context/OrderContext";
 import UpdateProduct from "./components/UpdateProduct";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -46,7 +48,8 @@ function App() {
   return (
     <AuthProvider>
       <AppProvider>
-        <BrowserRouter>
+        <OrderProvider>
+          <BrowserRouter>
           <Navbar onSelectCategory={handleCategorySelect} />
           <Routes>
             <Route
@@ -108,8 +111,17 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route
+              path="/admin/orders"
+              element={
+                <PrivateRoute requiredRoles={["ROLE_ADMIN", "ROLE_SELLER"]}>
+                  <AdminOrders />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </BrowserRouter>
+        </OrderProvider>
       </AppProvider>
     </AuthProvider>
   );

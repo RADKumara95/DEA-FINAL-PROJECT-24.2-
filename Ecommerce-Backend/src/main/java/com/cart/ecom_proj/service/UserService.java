@@ -13,9 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Service
 @Transactional
 public class UserService {
@@ -28,6 +25,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired(required = false)
+    private EmailService emailService;
 
     public User registerUser(RegisterRequest request) {
         if (existsByUsername(request.getUsername())) {
@@ -51,7 +51,19 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Role ROLE_USER not found"));
         user.getRoles().add(userRole);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        
+        // Send welcome email
+        if (emailService != null) {
+            try {
+                emailService.sendWelcomeEmail(savedUser);
+            } catch (Exception e) {
+                // Log error but don't fail registration
+                System.err.println("Failed to send welcome email: " + e.getMessage());
+            }
+        }
+        
+        return savedUser;
     }
 
     public User getUserById(Long id) {
