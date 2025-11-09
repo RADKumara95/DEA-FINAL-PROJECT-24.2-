@@ -280,13 +280,25 @@ const Cart = () => {
 
   useEffect(() => {
     const fetchImagesAndUpdateCart = async () => {
-      console.log("Cart", cart);
+      console.log("🛒 Cart useEffect - cart length:", cart.length);
+      console.log("🛒 Cart useEffect - cart items:", cart);
+      
+      if (cart.length === 0) {
+        setCartItems([]);
+        setStockErrors([]);
+        return;
+      }
+
       try {
-        const response = await API.get("/products");
-        const backendProducts = response.data;
+        // Fetch product data for validation (using pagination to get all products)
+        const response = await API.get("/products?page=0&size=1000");
+        const backendProducts = response.data.content || response.data || [];
         const backendProductIds = backendProducts.map((product) => product.id);
 
         const updatedCartItems = cart.filter((item) => backendProductIds.includes(item.id));
+        
+        console.log("🛒 Filtered cart items:", updatedCartItems.length);
+        
         const cartItemsWithImages = await Promise.all(
           updatedCartItems.map(async (item) => {
             try {
@@ -310,7 +322,7 @@ const Cart = () => {
                   : true,
               };
             } catch (error) {
-              console.error("Error fetching image:", error);
+              console.error("🛒 Error fetching image for product:", item.id, error);
               return {
                 ...item,
                 imageUrl: "placeholder-image-url",
@@ -319,19 +331,15 @@ const Cart = () => {
             }
           })
         );
-        console.log("cart", cart);
+        
+        console.log("🛒 Cart items with images:", cartItemsWithImages.length);
         setCartItems(cartItemsWithImages);
       } catch (error) {
-        console.error("Error fetching product data:", error);
+        console.error("🛒 Error fetching product data:", error);
       }
     };
 
-    if (cart.length) {
-      fetchImagesAndUpdateCart();
-    } else {
-      setCartItems([]);
-      setStockErrors([]);
-    }
+    fetchImagesAndUpdateCart();
   }, [cart]);
 
   useEffect(() => {
