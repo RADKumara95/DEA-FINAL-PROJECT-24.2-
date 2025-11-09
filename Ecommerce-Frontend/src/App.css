@@ -182,11 +182,24 @@ a {
 
 .navbar-search {
   position: relative;
-  min-width: 250px;
+  min-width: 280px;
 }
 
 .navbar-search .form-control {
-  padding-right: 2.5rem;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.navbar-search .btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 0;
+}
+
+.navbar-search .list-group {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+  border-top: 0;
 }
 
 .navbar-actions {

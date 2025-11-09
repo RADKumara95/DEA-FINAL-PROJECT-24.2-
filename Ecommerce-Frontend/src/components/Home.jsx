@@ -6,7 +6,7 @@ import AppContext from "../Context/Context";
 import Pagination from "./Pagination";
 import unplugged from "../assets/unplugged.png"
 
-const Home = ({ selectedCategory, onClearCategory, searchKeyword }) => {
+const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch }) => {
   const { addToCart } = useContext(AppContext);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +32,7 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword }) => {
     setSortDir(dir);
   }, [searchParams]);
 
+  // Main effect to fetch products
   useEffect(() => {
     fetchProducts();
   }, [currentPage, pageSize, sortBy, sortDir, selectedCategory, searchKeyword]);
@@ -39,59 +40,56 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword }) => {
   const fetchProducts = async () => {
     setLoading(true);
     setError("");
+    
     try {
-      let url = `/products?page=${currentPage}&size=${pageSize}&sortBy=${sortBy}&sortDir=${sortDir}`;
-      
+      let url = "/products";
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        size: pageSize.toString(),
+        sortBy: sortBy,
+        sortDir: sortDir
+      });
+
       // Add category filter if selected
       if (selectedCategory) {
-        url += `&category=${encodeURIComponent(selectedCategory)}`;
+        url = "/products/filter";
+        params.append("category", selectedCategory);
       }
       
-      // Add search keyword filter if provided
+      // Add search keyword if provided
       if (searchKeyword && searchKeyword.trim()) {
-        url += `&keyword=${encodeURIComponent(searchKeyword.trim())}`;
+        url = "/products/search";
+        params.append("keyword", searchKeyword.trim());
       }
+
+      const response = await API.get(`${url}?${params.toString()}`);
+      console.log("API Response:", response.data);
       
-      const response = await API.get(url);
-      
+      // Handle paginated response
       if (response.data.content) {
-        // Paginated response
-        const productsData = response.data.content;
-        const updatedProducts = await fetchProductImages(productsData);
-        setProducts(updatedProducts);
+        const productsWithImages = await fetchProductImages(response.data.content);
+        setProducts(productsWithImages);
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);
-      } else if (Array.isArray(response.data)) {
-        // Non-paginated response (fallback) - apply client-side filtering if needed
-        let filteredData = response.data;
-        
-        if (selectedCategory) {
-          filteredData = filteredData.filter((p) => p.category === selectedCategory);
-        }
-        
-        if (searchKeyword && searchKeyword.trim()) {
-          const keyword = searchKeyword.trim().toLowerCase();
-          filteredData = filteredData.filter((p) => 
-            p.name.toLowerCase().includes(keyword) || 
-            p.brand.toLowerCase().includes(keyword) ||
-            p.description?.toLowerCase().includes(keyword)
-          );
-        }
-        
-        const updatedProducts = await fetchProductImages(filteredData);
-        setProducts(updatedProducts);
+      } else {
+        // Handle non-paginated response (fallback)
+        const productsArray = Array.isArray(response.data) ? response.data : [];
+        const productsWithImages = await fetchProductImages(productsArray);
+        setProducts(productsWithImages);
         setTotalPages(1);
-        setTotalElements(updatedProducts.length);
+        setTotalElements(productsArray.length);
       }
     } catch (err) {
       console.error("Error fetching products:", err);
-      setError("Failed to load products");
+      setError(err.response?.data?.message || "Failed to load products. Please try again later.");
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
   const fetchProductImages = async (productsData) => {
+    console.log("Fetching images for products:", productsData);
     return Promise.all(
       productsData.map(async (product) => {
         try {
@@ -103,7 +101,8 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword }) => {
           return { ...product, imageUrl };
         } catch (error) {
           console.error("Error fetching image for product ID:", product.id, error);
-          return { ...product, imageUrl: null };
+          // Use fallback image from assets
+          return { ...product, imageUrl: unplugged };
         }
       })
     );
@@ -225,8 +224,7 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword }) => {
                       className="btn-close btn-close-white ms-2" 
                       style={{ fontSize: "0.7rem" }}
                       onClick={() => {
-                        // Clear search - this will need to be passed from App component
-                        window.location.href = "/";
+                        onClearSearch && onClearSearch();
                       }}
                       aria-label="Clear search"
                     ></button>
@@ -267,12 +265,6 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword }) => {
             products.map((product) => {
             const { id, brand, name, price, productAvailable, imageUrl } =
               product;
-            const cardStyle = {
-              width: "18rem",
-              height: "12rem",
-              boxShadow: "rgba(0, 0, 0, 0.24) 0px 2px 3px",
-              backgroundColor: productAvailable ? "#fff" : "#ccc",
-            };
             return (
               <div
                 className="card mb-3"
@@ -294,10 +286,10 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword }) => {
               >
                 <Link
                   to={`/product/${id}`}
-                  style={{ textDecoration: "none", color: "inherit" }}
+                  style={{ textDecoration: "none", color: "inherit", flexGrow: 1, display: "flex", flexDirection: "column" }}
                 >
                   <img
-                    src={imageUrl}
+                    src={imageUrl || unplugged}
                     alt={name}
                     style={{
                       width: "100%",
@@ -338,29 +330,31 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword }) => {
                         className="card-text"
                         style={{ fontWeight: "600", fontSize: "1.1rem",marginBottom:'5px' }}
                       >
-                        <i class="bi bi-currency-rupee"></i>
+                        <i className="bi bi-currency-rupee"></i>
                         {price}
                       </h5>
                     </div>
-                    <button
-                      className="btn-hover color-9"
-                      style={{
-                        margin: '0',
-                        width: '100%',
-                        padding: '0.75rem',
-                        fontSize: '0.9rem',
-                        fontWeight: '500'
-                      }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        addToCart(product);
-                      }}
-                      disabled={!productAvailable}
-                    >
-                      {productAvailable ? "Add to Cart" : "Out of Stock"}
-                    </button> 
                   </div>
                 </Link>
+                <button
+                  className="btn-hover color-9"
+                  style={{
+                    margin: '10px',
+                    width: 'calc(100% - 20px)',
+                    padding: '0.75rem',
+                    fontSize: '0.9rem',
+                    fontWeight: '500'
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addToCart(product);
+                    alert("Product added to cart!");
+                  }}
+                  disabled={!productAvailable}
+                >
+                  {productAvailable ? "Add to Cart" : "Out of Stock"}
+                </button>
               </div>
             );
           })

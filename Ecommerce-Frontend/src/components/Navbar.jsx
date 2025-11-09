@@ -51,9 +51,31 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
     }
   };
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (input.trim() && onSearch) {
+      onSearch(input.trim());
+      setShowSearchResults(false);
+      // Navigate to home page if not already there
+      if (window.location.pathname !== "/") {
+        navigate("/");
+      }
+    }
+  };
+
+  const handleSearchResultClick = (productId) => {
+    setShowSearchResults(false);
+    setInput("");
+    navigate(`/product/${productId}`);
+  };
+
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
     onSelectCategory(category);
+    // Navigate to home page if not already there
+    if (window.location.pathname !== "/") {
+      navigate("/");
+    }
   };
 
   const toggleTheme = () => {
@@ -183,34 +205,71 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
                 </button>
 
                 <div className="navbar-search">
-                  <input
-                    className="form-control"
-                    type="search"
-                    placeholder="Search products..."
-                    aria-label="Search"
-                    value={input}
-                    onChange={(e) => handleChange(e.target.value)}
-                    onFocus={() => setSearchFocused(true)}
-                    onBlur={() => setSearchFocused(false)}
-                  />
-                  {showSearchResults && (
-                    <ul className="list-group">
+                  <form onSubmit={handleSearchSubmit} className="d-flex">
+                    <input
+                      className="form-control"
+                      type="search"
+                      placeholder="Search products..."
+                      aria-label="Search"
+                      value={input}
+                      onChange={(e) => handleChange(e.target.value)}
+                      onFocus={() => setSearchFocused(true)}
+                      onBlur={() => {
+                        // Delay hiding results to allow clicking
+                        setTimeout(() => setSearchFocused(false), 200);
+                      }}
+                    />
+                    <button 
+                      className="btn btn-outline-primary ms-1" 
+                      type="submit"
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      <i className="bi bi-search"></i>
+                    </button>
+                  </form>
+                  {showSearchResults && (searchFocused || showSearchResults) && (
+                    <ul className="list-group position-absolute" style={{ 
+                      top: "100%", 
+                      left: 0, 
+                      right: 0, 
+                      zIndex: 1000,
+                      maxHeight: "300px",
+                      overflowY: "auto"
+                    }}>
                       {searchResults.length > 0 ? (
-                        searchResults.map((result) => (
-                          <li key={result.id} className="list-group-item">
-                            <Link
-                              to={`/product/${result.id}`}
-                              className="search-result-link"
-                            >
-                              <span>{result.name}</span>
-                            </Link>
+                        <>
+                          <li className="list-group-item bg-light">
+                            <small className="text-muted">
+                              Click a product to view details, or press Enter to search all products
+                            </small>
                           </li>
-                        ))
+                          {searchResults.slice(0, 5).map((result) => (
+                            <li key={result.id} className="list-group-item list-group-item-action">
+                              <button
+                                className="btn btn-link text-start p-0 w-100"
+                                style={{ textDecoration: "none" }}
+                                onClick={() => handleSearchResultClick(result.id)}
+                              >
+                                <span>{result.name}</span>
+                                <small className="text-muted d-block">{result.brand}</small>
+                              </button>
+                            </li>
+                          ))}
+                          {searchResults.length > 5 && (
+                            <li className="list-group-item bg-light">
+                              <small className="text-muted">
+                                {searchResults.length - 5} more results... Press Enter to see all
+                              </small>
+                            </li>
+                          )}
+                        </>
                       ) : (
                         noResults && (
-                          <p className="no-results-message">
-                            No Product with such Name
-                          </p>
+                          <li className="list-group-item">
+                            <p className="no-results-message mb-0">
+                              No Product with such Name
+                            </p>
+                          </li>
                         )
                       )}
                     </ul>

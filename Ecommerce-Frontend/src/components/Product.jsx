@@ -57,7 +57,7 @@ const Product = () => {
 
   const handlAddToCart = () => {
     addToCart(product);
-    alert("Product added to cart");
+    alert("Product added to cart!");
   };
   if (!product) {
     return (
