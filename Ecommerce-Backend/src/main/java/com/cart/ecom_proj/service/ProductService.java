@@ -34,16 +34,13 @@ public class ProductService {
     @Autowired(required = false)
     private FileValidationService fileValidationService;
 
-<<<<<<< HEAD
-    @Cacheable(value = "products")
-=======
     /**
      * Retrieves all products from the database.
      * Note: This method returns all products without pagination - use with caution for large datasets.
      * 
      * @return List of all products
      */
->>>>>>> main
+    @Cacheable(value = "products")
     public List<Product> getAllProducts() {
         return repo.findAll();
     }
@@ -68,9 +65,6 @@ public class ProductService {
         return repo.findAll(pageable);
     }
 
-<<<<<<< HEAD
-    @Cacheable(value = "product", key = "#id")
-=======
     /**
      * Retrieves a specific product by its ID.
      * Throws ResourceNotFoundException if product is not found.
@@ -79,15 +73,12 @@ public class ProductService {
      * @return Product object if found
      * @throws ResourceNotFoundException if product with given ID doesn't exist
      */
->>>>>>> main
+    @Cacheable(value = "product", key = "#id")
     public Product getProductById(int id){
         return repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
     }
 
-<<<<<<< HEAD
-    @CacheEvict(value = "products", allEntries = true)
-=======
     /**
      * Creates a new product with optional image upload.
      * Handles image file validation, encoding, and storage.
@@ -97,7 +88,7 @@ public class ProductService {
      * @return Saved product with generated ID
      * @throws IOException if image processing fails
      */
->>>>>>> main
+    @CacheEvict(value = "products", allEntries = true)
     public Product addProduct(Product product, MultipartFile imageFile) throws IOException {
         // Process image file if provided
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -116,9 +107,6 @@ public class ProductService {
         return repo.save(product);
     }
 
-<<<<<<< HEAD
-    @CacheEvict(value = {"product", "products"}, allEntries = true)
-=======
     /**
      * Updates an existing product with new information and optional image replacement.
      * Preserves existing image if no new image is provided.
@@ -130,7 +118,7 @@ public class ProductService {
      * @throws IOException if image processing fails
      * @throws ResourceNotFoundException if product with given ID doesn't exist
      */
->>>>>>> main
+    @CacheEvict(value = {"product", "products"}, allEntries = true)
     public Product updateProduct(int id, Product product, MultipartFile imageFile) throws IOException {
         // First, retrieve the existing product to ensure it exists
         Product existingProduct = getProductById(id);
@@ -162,9 +150,6 @@ public class ProductService {
         return repo.save(existingProduct);
     }
 
-<<<<<<< HEAD
-    @CacheEvict(value = {"product", "products"}, allEntries = true)
-=======
     /**
      * Deletes a product from the database.
      * Performs existence check before deletion to provide meaningful error messages.
@@ -172,7 +157,7 @@ public class ProductService {
      * @param id ID of the product to delete
      * @throws ResourceNotFoundException if product with given ID doesn't exist
      */
->>>>>>> main
+    @CacheEvict(value = {"product", "products"}, allEntries = true)
     public void deleteProduct(int id) {
         // Check if product exists before attempting deletion
         if (!repo.existsById(id)) {
