@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +26,7 @@ public class ProductService {
     @Autowired(required = false)
     private FileValidationService fileValidationService;
 
+    @Cacheable(value = "products")
     public List<Product> getAllProducts() {
         return repo.findAll();
     }
@@ -34,11 +37,13 @@ public class ProductService {
         return repo.findAll(pageable);
     }
 
+    @Cacheable(value = "product", key = "#id")
     public Product getProductById(int id){
         return repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public Product addProduct(Product product, MultipartFile imageFile) throws IOException {
         if (imageFile != null && !imageFile.isEmpty()) {
             if (fileValidationService != null) {
@@ -51,6 +56,7 @@ public class ProductService {
         return repo.save(product);
     }
 
+    @CacheEvict(value = {"product", "products"}, allEntries = true)
     public Product updateProduct(int id, Product product, MultipartFile imageFile) throws IOException {
         Product existingProduct = getProductById(id);
         existingProduct.setName(product.getName());
@@ -73,6 +79,7 @@ public class ProductService {
         return repo.save(existingProduct);
     }
 
+    @CacheEvict(value = {"product", "products"}, allEntries = true)
     public void deleteProduct(int id) {
         if (!repo.existsById(id)) {
             throw new ResourceNotFoundException("Product not found with id: " + id);
