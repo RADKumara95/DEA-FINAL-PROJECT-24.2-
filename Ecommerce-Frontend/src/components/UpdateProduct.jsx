@@ -6,6 +6,8 @@ const UpdateProduct = () => {
   const { id } = useParams();
   const [product, setProduct] = useState({});
   const [image, setImage] = useState();
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageErrors, setImageErrors] = useState([]);
   const [updateProduct, setUpdateProduct] = useState({
     id: null,
     name: "",
@@ -55,6 +57,10 @@ const UpdateProduct = () => {
  
   const handleSubmit = async(e) => {
     e.preventDefault();
+    if (imageErrors.length) {
+      alert('Please fix image validation errors before submitting');
+      return;
+    }
     console.log("images", image)
     console.log("productsdfsfsf", updateProduct)
     const updatedProduct = new FormData();
@@ -93,7 +99,29 @@ const UpdateProduct = () => {
   };
   
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (!file) return;
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const newErrors = [];
+
+    if (!allowedTypes.includes(file.type)) {
+      newErrors.push("Invalid file type. Only JPG, PNG and WEBP are allowed.");
+    }
+    if (file.size > maxSize) {
+      newErrors.push("File size exceeds 5MB.");
+    }
+
+    if (newErrors.length) {
+      setImageErrors(newErrors);
+      setImage(null);
+      setImagePreview(null);
+      return;
+    }
+
+    setImageErrors([]);
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
   };
   
 
@@ -197,7 +225,7 @@ const UpdateProduct = () => {
               <h6>Image</h6>
             </label>
             <img
-              src={image ? URL.createObjectURL(image) : "Image unavailable"}
+              src={imagePreview ? imagePreview : (image ? URL.createObjectURL(image) : "")}
               alt={product.imageName}
               style={{
                 width: "100%",
@@ -215,6 +243,13 @@ const UpdateProduct = () => {
               name="imageUrl"
               id="imageUrl"
             />
+            {imageErrors.length > 0 && (
+              <div className="mt-2 text-danger">
+                {imageErrors.map((err, idx) => (
+                  <div key={idx}>{err}</div>
+                ))}
+              </div>
+            )}
           </div>
           <div className="col-12">
             <div className="form-check">

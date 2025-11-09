@@ -4,6 +4,7 @@ import com.cart.ecom_proj.model.Product;
 import com.cart.ecom_proj.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -23,8 +25,21 @@ public class ProductController {
     private ProductService service;
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts(){
-        return new ResponseEntity<>(service.getAllProducts(), HttpStatus.OK);
+    public ResponseEntity<?> getAllProducts(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "12") int size,
+            @RequestParam(required = false, defaultValue = "id") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortDir) {
+        
+        // If pagination parameters are provided, return paginated results
+        if (page >= 0 && size > 0) {
+            Page<Product> productsPage = service.getAllProductsPaginated(page, size, sortBy, sortDir);
+            return ResponseEntity.ok(productsPage);
+        }
+        
+        // Otherwise return all products (for backward compatibility)
+        List<Product> products = service.getAllProducts();
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
     @GetMapping("/product/{id}")
@@ -81,8 +96,64 @@ public class ProductController {
     }
 
     @GetMapping("/products/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyword){
+    public ResponseEntity<?> searchProducts(
+            @RequestParam String keyword,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "12") int size,
+            @RequestParam(required = false, defaultValue = "id") String sortBy) {
+        
+        if (page >= 0 && size > 0) {
+            Page<Product> productsPage = service.searchProductsPaginated(keyword, page, size, sortBy);
+            return ResponseEntity.ok(productsPage);
+        }
+        
         List<Product> products = service.searchProducts(keyword);
         return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    @GetMapping("/products/advanced-search")
+    public ResponseEntity<Page<Product>> advancedSearch(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Boolean available,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "12") int size,
+            @RequestParam(required = false, defaultValue = "id") String sortBy) {
+        
+        Page<Product> products = service.advancedSearchProducts(
+                keyword, category, brand, minPrice, maxPrice, available, page, size, sortBy);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/products/filter")
+    public ResponseEntity<?> filterProducts(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "12") int size) {
+        
+        if (category != null) {
+            Page<Product> products = service.filterProductsByCategoryPaginated(category, page, size);
+            return ResponseEntity.ok(products);
+        }
+        
+        if (brand != null) {
+            Page<Product> products = service.filterProductsByBrandPaginated(brand, page, size);
+            return ResponseEntity.ok(products);
+        }
+        
+        if (minPrice != null && maxPrice != null) {
+            Page<Product> products = service.filterProductsByPriceRange(minPrice, maxPrice, page, size);
+            return ResponseEntity.ok(products);
+        }
+        
+        // Default: return all products with pagination
+        Page<Product> products = service.getAllProductsPaginated(page, size, "id", "asc");
+        return ResponseEntity.ok(products);
     }
 }

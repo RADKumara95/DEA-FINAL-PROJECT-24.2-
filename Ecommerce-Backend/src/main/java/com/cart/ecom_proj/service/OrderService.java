@@ -10,7 +10,6 @@ import com.cart.ecom_proj.exception.ResourceNotFoundException;
 import com.cart.ecom_proj.model.*;
 import com.cart.ecom_proj.repo.OrderRepository;
 import com.cart.ecom_proj.repo.ProductRepo;
-import com.cart.ecom_proj.repo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,10 +30,10 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private ProductRepo productRepo;
+
+    @Autowired(required = false)
+    private EmailService emailService;
 
     public Order createOrder(CreateOrderRequest request, User user) {
         Order order = new Order();
@@ -65,7 +64,7 @@ public class OrderService {
             orderItem.setProduct(product);
             orderItem.setQuantity(itemRequest.getQuantity());
             orderItem.setPriceAtOrder(product.getPrice());
-            orderItem.calculateSubtotal();
+            orderItem.calculateAndSetSubtotal();
 
             orderItems.add(orderItem);
             totalAmount = totalAmount.add(orderItem.getSubtotal());
@@ -78,7 +77,19 @@ public class OrderService {
         order.setOrderItems(orderItems);
         order.setTotalAmount(totalAmount);
 
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        
+        // Send order confirmation email
+        if (emailService != null) {
+            try {
+                emailService.sendOrderConfirmationEmail(savedOrder);
+            } catch (Exception e) {
+                // Log error but don't fail order creation
+                System.err.println("Failed to send order confirmation email: " + e.getMessage());
+            }
+        }
+        
+        return savedOrder;
     }
 
     public Order getOrderById(Long id) {
@@ -106,6 +117,7 @@ public class OrderService {
 
     public Order updateOrderStatus(Long orderId, UpdateOrderStatusRequest request) {
         Order order = getOrderById(orderId);
+        OrderStatus oldStatus = order.getStatus();
         order.setStatus(request.getStatus());
         if (request.getDeliveryDate() != null) {
             order.setDeliveryDate(request.getDeliveryDate());
@@ -116,7 +128,20 @@ public class OrderService {
         if (request.getStatus() == OrderStatus.DELIVERED) {
             order.setPaymentStatus(PaymentStatus.PAID);
         }
-        return orderRepository.save(order);
+        
+        Order savedOrder = orderRepository.save(order);
+        
+        // Send status update email if status changed
+        if (emailService != null && !oldStatus.equals(request.getStatus())) {
+            try {
+                emailService.sendOrderStatusUpdateEmail(savedOrder);
+            } catch (Exception e) {
+                // Log error but don't fail status update
+                System.err.println("Failed to send order status update email: " + e.getMessage());
+            }
+        }
+        
+        return savedOrder;
     }
 
     public Order cancelOrder(Long orderId, Long userId) {
@@ -151,10 +176,11 @@ public class OrderService {
     }
 
     public void deleteOrder(Long id) {
-        if (!orderRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Order not found with id: " + id);
-        }
-        orderRepository.deleteById(id);
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+        // Soft delete: mark as deleted instead of physically removing from DB
+        order.setDeleted(true);
+        orderRepository.save(order);
     }
 }
 
