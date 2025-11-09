@@ -124,6 +124,54 @@ const AdminOrders = () => {
     }
   };
 
+  const handleGenerateOrdersReport = async (days = 30) => {
+    try {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - (days - 1));
+      const startStr = start.toISOString().split('T')[0];
+      const endStr = end.toISOString().split('T')[0];
+
+      const res = await API.get(`/reports/admin/orders?startDate=${startStr}&endDate=${endStr}`, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `orders-report-${startStr}-to-${endStr}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to generate orders report:', err);
+      alert('Failed to generate orders report');
+    }
+  };
+
+  const handleExportSalesCsv = async (days = 30) => {
+    try {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - (days - 1));
+      const startStr = start.toISOString().split('T')[0];
+      const endStr = end.toISOString().split('T')[0];
+
+      const res = await API.get(`/reports/admin/sales?startDate=${startStr}&endDate=${endStr}`, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sales-report-${startStr}-to-${endStr}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export sales csv:', err);
+      alert('Failed to export sales csv');
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleString("en-US", {
@@ -200,9 +248,13 @@ const AdminOrders = () => {
     <div className="container mt-5 mb-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Manage Orders</h2>
-        <Link to="/orders" className="btn btn-outline-secondary">
-          View My Orders
-        </Link>
+        <div className="btn-group">
+          <button className="btn btn-sm btn-outline-primary" onClick={() => handleGenerateOrdersReport(30)}>📄 Generate 30d Report</button>
+          <button className="btn btn-sm btn-outline-secondary" onClick={() => handleExportSalesCsv(30)}>📊 Export Sales CSV</button>
+          <Link to="/orders" className="btn btn-outline-secondary">
+            View My Orders
+          </Link>
+        </div>
       </div>
 
       {error && (

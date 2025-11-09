@@ -79,6 +79,24 @@ const AddProduct = () => {
       });
   };
 
+  const handleExportProducts = async () => {
+    try {
+      const res = await axios.get('http://localhost:8080/api/reports/products/export', { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'products.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export products:', err);
+      alert('Failed to export products');
+    }
+  };
+
   return (
     <div className="container">
     <div className="center-container">
@@ -228,12 +246,15 @@ const AddProduct = () => {
             <label className="form-check-label">Product Available</label>
           </div>
         </div>
-        <div className="col-12">
+        <div className="col-12 d-flex gap-2">
           <button
             type="submit"
             className="btn btn-primary"
           >
             Submit
+          </button>
+          <button type="button" className="btn btn-outline-secondary" onClick={handleExportProducts}>
+            Export Products CSV
           </button>
         </div>
       </form>
