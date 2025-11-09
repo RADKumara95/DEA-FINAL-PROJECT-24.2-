@@ -106,13 +106,15 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
     document.body.className = theme;
   }, [theme]);
 
+  // Categories must match the actual categories in the database
   const categories = [
-    "Laptop",
-    "Headphone",
-    "Mobile",
-    "Electronics",
-    "Toys",
-    "Fashion",
+    "Smartphones",
+    "Laptops",
+    "Audio",
+    "Tablets",
+    "Accessories",
+    "Wearables",
+    "Monitors"
   ];
 
   return (
