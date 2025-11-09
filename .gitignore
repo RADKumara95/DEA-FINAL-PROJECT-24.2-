@@ -75,6 +75,12 @@ out/
 # VS Code
 .vscode/
 
+# H2 Database Files (file-based persistence)
+data/
+*.db
+*.mv.db
+*.trace.db
+
 # =====================================
 # NODE.JS / REACT FRONTEND
 # =====================================
