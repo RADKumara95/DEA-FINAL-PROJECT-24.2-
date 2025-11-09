@@ -162,95 +162,100 @@ const Navbar = ({ onSelectCategory, onSearch }) => {
                   </ul>
                 </li>
               </ul>
-              <button className="theme-btn" onClick={() => toggleTheme()}>
-                {theme === "dark-theme" ? (
-                  <i className="bi bi-moon-fill"></i>
-                ) : (
-                  <i className="bi bi-sun-fill"></i>
-                )}
-              </button>
-              <div className="d-flex align-items-center cart">
-                <Link to="/cart" className="nav-link text-dark">
-                  <i
-                    className="bi bi-cart me-2"
-                    style={{ display: "flex", alignItems: "center" }}
-                  >
-                    Cart
-                  </i>
-                </Link>
-                <input
-                  className="form-control me-2"
-                  type="search"
-                  placeholder="Search"
-                  aria-label="Search"
-                  value={input}
-                  onChange={(e) => handleChange(e.target.value)}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                />
-                {showSearchResults && (
-                  <ul className="list-group">
-                    {searchResults.length > 0 ? (
-                      searchResults.map((result) => (
-                        <li key={result.id} className="list-group-item">
-                          <Link
-                            to={`/product/${result.id}`}
-                            className="search-result-link"
-                          >
-                            <span>{result.name}</span>
-                          </Link>
-                        </li>
-                      ))
-                    ) : (
-                      noResults && (
-                        <p className="no-results-message">
-                          No Product with such Name
-                        </p>
-                      )
-                    )}
-                  </ul>
-                )}
-                <div className="ms-3">
-                  {isAuthenticated ? (
-                    <div className="dropdown">
-                      <button
-                        className="btn btn-outline-primary dropdown-toggle"
-                        type="button"
-                        id="userMenu"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        {user?.username || "User"}
-                      </button>
-                      <ul className="dropdown-menu" aria-labelledby="userMenu">
-                        <li>
-                          <Link className="dropdown-item" to="/profile">
-                            Profile
-                          </Link>
-                        </li>
-                        <li>
-                          <hr className="dropdown-divider" />
-                        </li>
-                        <li>
-                          <button
-                            className="dropdown-item"
-                            onClick={handleLogout}
-                          >
-                            Logout
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
+              <div className="navbar-right">
+                <button className="theme-btn" onClick={() => toggleTheme()}>
+                  {theme === "dark-theme" ? (
+                    <i className="bi bi-moon-fill"></i>
                   ) : (
-                    <div>
-                      <Link to="/login" className="btn btn-outline-primary me-2">
-                        Login
-                      </Link>
-                      <Link to="/register" className="btn btn-primary">
-                        Register
-                      </Link>
-                    </div>
+                    <i className="bi bi-sun-fill"></i>
                   )}
+                </button>
+
+                <div className="navbar-search">
+                  <input
+                    className="form-control"
+                    type="search"
+                    placeholder="Search products..."
+                    aria-label="Search"
+                    value={input}
+                    onChange={(e) => handleChange(e.target.value)}
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setSearchFocused(false)}
+                  />
+                  {showSearchResults && (
+                    <ul className="list-group">
+                      {searchResults.length > 0 ? (
+                        searchResults.map((result) => (
+                          <li key={result.id} className="list-group-item">
+                            <Link
+                              to={`/product/${result.id}`}
+                              className="search-result-link"
+                            >
+                              <span>{result.name}</span>
+                            </Link>
+                          </li>
+                        ))
+                      ) : (
+                        noResults && (
+                          <p className="no-results-message">
+                            No Product with such Name
+                          </p>
+                        )
+                      )}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="navbar-actions">
+                  <Link to="/cart" className="cart-link">
+                    <i className="bi bi-cart"></i>
+                    Cart
+                  </Link>
+
+                  <div className="auth-section">
+                    {isAuthenticated ? (
+                      <div className="user-dropdown">
+                        <div className="dropdown">
+                          <button
+                            className="btn btn-outline-primary dropdown-toggle"
+                            type="button"
+                            id="userMenu"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            {user?.username || "User"}
+                          </button>
+                          <ul className="dropdown-menu" aria-labelledby="userMenu">
+                            <li>
+                              <Link className="dropdown-item" to="/profile">
+                                Profile
+                              </Link>
+                            </li>
+                            <li>
+                              <hr className="dropdown-divider" />
+                            </li>
+                            <li>
+                              <button
+                                className="dropdown-item"
+                                onClick={handleLogout}
+                              >
+                                Logout
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="auth-buttons">
+                        <Link to="/login" className="btn btn-outline-primary">
+                          Login
+                        </Link>
+                        <Link to="/register" className="btn btn-primary">
+                          Register
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
