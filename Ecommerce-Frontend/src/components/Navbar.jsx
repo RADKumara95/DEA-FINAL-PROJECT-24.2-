@@ -123,6 +123,7 @@ const Navbar = ({ onSelectCategory, onSearch }) => {
                 {isAuthenticated && (
                   <li className="nav-item">
                     <Link className="nav-link" to="/orders">
+                      <i className="bi bi-bag-check me-1"></i>
                       My Orders
                     </Link>
                   </li>
@@ -130,6 +131,7 @@ const Navbar = ({ onSelectCategory, onSearch }) => {
                 {isAuthenticated && isAdminOrSeller && (
                   <li className="nav-item">
                     <Link className="nav-link" to="/admin/orders">
+                      <i className="bi bi-clipboard-data me-1"></i>
                       Manage Orders
                     </Link>
                   </li>
