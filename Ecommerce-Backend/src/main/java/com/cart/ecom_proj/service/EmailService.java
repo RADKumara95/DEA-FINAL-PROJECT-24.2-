@@ -2,6 +2,93 @@ package com.cart.ecom_proj.service;
 
 import com.cart.ecom_proj.model.Order;
 import com.cart.ecom_proj.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
+
+@Service
+public class EmailService {
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    // 'from' address will default to spring.mail.username
+
+    private String loadTemplate(String path) throws IOException {
+        ClassPathResource resource = new ClassPathResource(path);
+        try (InputStream in = resource.getInputStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            return reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        }
+    }
+
+    public void sendWelcomeEmail(User user) throws MessagingException, IOException {
+        String content = loadTemplate("templates/welcome-email.html");
+        content = content.replace("{{username}}", user.getUsername() == null ? "" : user.getUsername())
+                .replace("{{firstName}}", user.getFirstName() == null ? "" : user.getFirstName());
+
+        sendHtmlEmail(user.getEmail(), "Welcome to Our Store", content);
+    }
+
+    public void sendOrderConfirmationEmail(Order order) throws MessagingException, IOException {
+        String content = loadTemplate("templates/order-confirmation-email.html");
+        String itemsHtml = order.getOrderItems().stream().map(oi ->
+                String.format("<li>%s x %d - %s", oi.getProduct().getName(), oi.getQuantity(), oi.getSubtotal().setScale(2, RoundingMode.HALF_UP).toString())
+        ).collect(Collectors.joining(""));
+
+        content = content.replace("{{username}}", order.getUser().getFirstName() == null ? order.getUser().getUsername() : order.getUser().getFirstName())
+                .replace("{{orderId}}", String.valueOf(order.getId()))
+                .replace("{{totalAmount}}", order.getTotalAmount() == null ? "0.00" : order.getTotalAmount().setScale(2, RoundingMode.HALF_UP).toString())
+                .replace("{{items}}", itemsHtml);
+
+        sendHtmlEmail(order.getUser().getEmail(), "Order Confirmation - Order #" + order.getId(), content);
+    }
+
+    public void sendOrderStatusUpdateEmail(Order order) throws MessagingException, IOException {
+        String content = loadTemplate("templates/order-status-update-email.html");
+        content = content.replace("{{username}}", order.getUser().getFirstName() == null ? order.getUser().getUsername() : order.getUser().getFirstName())
+                .replace("{{orderId}}", String.valueOf(order.getId()))
+                .replace("{{status}}", order.getStatus() == null ? "" : order.getStatus().name());
+
+        sendHtmlEmail(order.getUser().getEmail(), "Order #" + order.getId() + " - Status Update", content);
+    }
+
+    public void sendPasswordResetEmail(User user, String token) throws MessagingException, IOException {
+        String content = loadTemplate("templates/password-reset-email.html");
+        String resetLink = ""; // You may construct a frontend URL here: e.g. https://your-frontend/reset?token=" + token
+        content = content.replace("{{username}}", user.getUsername() == null ? "" : user.getUsername())
+                .replace("{{resetLink}}", resetLink)
+                .replace("{{token}}", token == null ? "" : token);
+
+        sendHtmlEmail(user.getEmail(), "Password Reset Request", content);
+    }
+
+    private void sendHtmlEmail(String to, String subject, String htmlContent) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
+        helper.setText(htmlContent, true);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        // from will be taken from mailSender properties (spring.mail.username)
+        mailSender.send(message);
+    }
+}
+package com.cart.ecom_proj.service;
+
+import com.cart.ecom_proj.model.Order;
+import com.cart.ecom_proj.model.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
