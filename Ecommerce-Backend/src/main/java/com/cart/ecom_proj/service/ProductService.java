@@ -207,7 +207,7 @@ public class ProductService {
      */
     public Page<Product> filterProductsByCategoryPaginated(String category, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return repo.findByCategory(category, pageable);
+        return repo.findByCategoryAndDeletedFalse(category, pageable);
     }
 
     /**
@@ -220,7 +220,7 @@ public class ProductService {
      */
     public Page<Product> filterProductsByBrandPaginated(String brand, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return repo.findByBrand(brand, pageable);
+        return repo.findByBrandAndDeletedFalse(brand, pageable);
     }
 
     /**

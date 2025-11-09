@@ -290,3 +290,10 @@ config/local/
 # Development environment specific
 .env.development
 .env.staging
+
+gradle-local.properties
+gradle-user.properties
+gradle/
+
+target/
+build/

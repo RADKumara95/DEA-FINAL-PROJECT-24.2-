@@ -12,6 +12,7 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.UnitValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +52,7 @@ public class ReportService {
 
             // Order basic info
             Table infoTable = new Table(new float[]{1, 2});
-            infoTable.setWidthPercent(100);
+            infoTable.setWidth(UnitValue.createPercentValue(100));
             infoTable.addCell(new Cell().add(new Paragraph("Order ID:")));
             infoTable.addCell(new Cell().add(new Paragraph(String.valueOf(order.getId()))));
             infoTable.addCell(new Cell().add(new Paragraph("Order Date:")));
@@ -64,7 +65,7 @@ public class ReportService {
 
             // Items table
             Table table = new Table(new float[]{4, 1, 2, 2});
-            table.setWidthPercent(100);
+            table.setWidth(UnitValue.createPercentValue(100));
             table.addHeaderCell(new Cell().add(new Paragraph("Product")));
             table.addHeaderCell(new Cell().add(new Paragraph("Qty")));
             table.addHeaderCell(new Cell().add(new Paragraph("Unit Price")));
@@ -107,7 +108,7 @@ public class ReportService {
                         p.getBrand(),
                         p.getCategory(),
                         p.getPrice() != null ? p.getPrice().toString() : "",
-                        p.getStockQuantity() != null ? p.getStockQuantity().toString() : "",
+                        String.valueOf(p.getStockQuantity()),
                         String.valueOf(p.isProductAvailable())
                 };
                 writer.writeNext(row);
@@ -134,7 +135,7 @@ public class ReportService {
             document.add(new Paragraph(" "));
 
             Table table = new Table(new float[]{1, 2, 2, 2});
-            table.setWidthPercent(100);
+            table.setWidth(UnitValue.createPercentValue(100));
             table.addHeaderCell(new Cell().add(new Paragraph("Order ID")));
             table.addHeaderCell(new Cell().add(new Paragraph("Date")));
             table.addHeaderCell(new Cell().add(new Paragraph("Customer")));

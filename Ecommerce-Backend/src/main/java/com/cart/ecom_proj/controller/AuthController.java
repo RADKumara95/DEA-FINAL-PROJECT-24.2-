@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -47,9 +47,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "User registration details", required = true,
-            content = @Content(schema = @Schema(implementation = RegisterRequest.class))) RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
             User user = userService.registerUser(request);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -69,9 +67,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "User login credentials", required = true,
-            content = @Content(schema = @Schema(implementation = LoginRequest.class))) LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
@@ -136,9 +132,7 @@ public class AuthController {
     })
     @SecurityRequirement(name = "cookieAuth")
     @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@Valid @RequestBody @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Updated user profile information", required = true,
-            content = @Content(schema = @Schema(implementation = UpdateUserRequest.class))) UpdateUserRequest request) {
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateUserRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");

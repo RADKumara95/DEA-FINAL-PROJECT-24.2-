@@ -41,7 +41,7 @@ public interface ProductRepo extends JpaRepository<Product, Integer> {
             "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(p.brand) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(p.category) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "LOWER(p.category) LIKE LOWER(CONCAT('%', :keyword, '%')))) AND " +
             "(:category IS NULL OR LOWER(p.category) = LOWER(:category)) AND " +
             "(:brand IS NULL OR LOWER(p.brand) = LOWER(:brand)) AND " +
             "(:minPrice IS NULL OR p.price >= :minPrice) AND " +

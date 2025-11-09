@@ -168,7 +168,7 @@ public class OrderService {
      * @return List of orders belonging to the user
      */
     public List<Order> getUserOrders(Long userId) {
-        return orderRepository.findByUserIdOrderByOrderDateDesc(userId);
+        return orderRepository.findByUserIdAndDeletedFalseOrderByOrderDateDesc(userId);
     }
 
     /**
@@ -186,7 +186,7 @@ public class OrderService {
         Sort sort = Sort.by(Sort.Direction.DESC, sortBy != null ? sortBy : "orderDate");
         Pageable pageable = PageRequest.of(page, size, sort);
         
-        return orderRepository.findByUserId(userId, pageable);
+        return orderRepository.findByUserIdAndDeletedFalse(userId, pageable);
     }
 
     /**
@@ -291,7 +291,7 @@ public class OrderService {
         
         // Apply status filter if provided, otherwise return all orders
         if (status != null) {
-            return orderRepository.findByStatus(status, pageable);
+            return orderRepository.findByStatusAndDeletedFalse(status, pageable);
         }
         return orderRepository.findAll(pageable);
     }
@@ -312,6 +312,27 @@ public class OrderService {
         // This preserves referential integrity and allows for data recovery if needed
         order.setDeleted(true);
         orderRepository.save(order);
+    }
+
+    /**
+     * Updates the payment status of an order (webhook operation).
+     * Used by payment gateways like Stripe to update payment status.
+     * 
+     * @param orderId Order ID to update
+     * @param paymentStatus New payment status
+     * @return Updated order object
+     * @throws ResourceNotFoundException if order doesn't exist
+     */
+    public Order updateOrderPaymentStatus(Long orderId, PaymentStatus paymentStatus) {
+        Order order = getOrderById(orderId);
+        order.setPaymentStatus(paymentStatus);
+        
+        // If payment succeeded, we might want to move order to confirmed status
+        if (paymentStatus == PaymentStatus.PAID && order.getStatus() == OrderStatus.PENDING) {
+            order.setStatus(OrderStatus.CONFIRMED);
+        }
+        
+        return orderRepository.save(order);
     }
 }
 
