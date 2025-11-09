@@ -1,4 +1,23 @@
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: ecommerce-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ecommerce
+      MYSQL_USER: ecomuser
+      MYSQL_PASSWORD: ecompassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
   backend:
     build:
       context: ./Ecommerce-Backend
@@ -8,6 +27,12 @@ services:
       - "8080:8080"
     environment:
       - JAVA_OPTS=-Xmx512m -Xms256m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ecommerce?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=ecomuser
+      - SPRING_DATASOURCE_PASSWORD=ecompassword
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - ecommerce-network
 
@@ -26,3 +51,6 @@ services:
 networks:
   ecommerce-network:
     driver: bridge
+
+volumes:
+  mysql-data:

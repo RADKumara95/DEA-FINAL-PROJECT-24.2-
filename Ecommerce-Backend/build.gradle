@@ -33,6 +33,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     
+    // Spring Session JDBC - for persistent sessions in database
+    implementation 'org.springframework.session:spring-session-jdbc'
+    
     // Spring messaging
     implementation 'org.springframework:spring-messaging'
     

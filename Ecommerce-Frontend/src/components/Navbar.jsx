@@ -70,10 +70,12 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
   };
 
   const handleCategorySelect = (category) => {
+    console.log("📁 Category selected:", category);
     setSelectedCategory(category);
     onSelectCategory(category);
     // Navigate to home page if not already there
     if (window.location.pathname !== "/") {
+      console.log("📁 Navigating to home page from:", window.location.pathname);
       navigate("/");
     }
   };
