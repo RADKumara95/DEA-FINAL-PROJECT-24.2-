@@ -68,15 +68,16 @@ const Product = () => {
   }
   return (
     <>
-      <div className="containers" style={{ display: "flex" }}>
-        <img
-          className="left-column-img"
-          src={imageUrl}
-          alt={product.imageName}
-          style={{ width: "50%", height: "auto" }}
-        />
+      <div className="containers" style={{ display: "flex", flexWrap: "wrap" }}>
+        <div className="left-column">
+          <img
+            className="left-column-img"
+            src={imageUrl}
+            alt={product.imageName}
+          />
+        </div>
 
-        <div className="right-column" style={{ width: "50%" }}>
+        <div className="right-column">
           <div className="product-description">
             <div style={{display:'flex',justifyContent:'space-between' }}>
             <span style={{ fontSize: "1.2rem", fontWeight: 'lighter' }}>
@@ -109,14 +110,15 @@ const Product = () => {
               onClick={handlAddToCart}
               disabled={!product.productAvailable}
               style={{
-                padding: "1rem 2rem",
+                padding: "0.75rem 2rem",
                 fontSize: "1rem",
-                backgroundColor: "#007bff",
+                backgroundColor: product.productAvailable ? "#007bff" : "#ccc",
                 color: "white",
                 border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
+                borderRadius: "8px",
+                cursor: product.productAvailable ? "pointer" : "not-allowed",
                 marginBottom: "1rem",
+                transition: "background-color 0.3s ease",
               }}
             >
               {product.productAvailable ? "Add to cart" : "Out of Stock"}
@@ -129,18 +131,20 @@ const Product = () => {
             </h6>
           
           </div>
-          <div className="update-button" style={{ display: "flex", gap: "1rem" }}>
+          <div className="update-button" style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             <button
               className="btn btn-primary"
               type="button"
               onClick={handleEditClick}
               style={{
-                padding: "1rem 2rem",
+                flex: "1",
+                minWidth: "120px",
+                padding: "0.75rem 1.5rem",
                 fontSize: "1rem",
                 backgroundColor: "#007bff",
                 color: "white",
                 border: "none",
-                borderRadius: "5px",
+                borderRadius: "8px",
                 cursor: "pointer",
               }}
             >
@@ -152,12 +156,14 @@ const Product = () => {
               type="button"
               onClick={deleteProduct}
               style={{
-                padding: "1rem 2rem",
+                flex: "1",
+                minWidth: "120px",
+                padding: "0.75rem 1.5rem",
                 fontSize: "1rem",
                 backgroundColor: "#dc3545",
                 color: "white",
                 border: "none",
-                borderRadius: "5px",
+                borderRadius: "8px",
                 cursor: "pointer",
               }}
             >

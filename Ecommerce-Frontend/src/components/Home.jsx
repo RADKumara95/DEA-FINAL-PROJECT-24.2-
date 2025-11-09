@@ -194,9 +194,10 @@ const Home = ({ selectedCategory }) => {
           className="grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-            gap: "20px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "2rem",
             marginBottom: "30px",
+            padding: "0",
           }}
         >
           {filteredProducts.length === 0 ? (
@@ -225,16 +226,18 @@ const Home = ({ selectedCategory }) => {
               <div
                 className="card mb-3"
                 style={{
-                  width: "250px",
-                  height: "360px",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                  borderRadius: "10px",
+                  width: "100%",
+                  height: "380px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  borderRadius: "12px",
                   overflow: "hidden", 
-                  backgroundColor: productAvailable ? "#fff" : "#ccc",
+                  backgroundColor: productAvailable ? "#fff" : "#f8f9fa",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent:'flex-start',
-                  alignItems:'stretch'
+                  alignItems:'stretch',
+                  border: productAvailable ? "1px solid #e9ecef" : "1px solid #dee2e6",
+                  transition: "transform 0.3s ease, box-shadow 0.3s ease"
                 }}
                 key={id}
               >
@@ -247,11 +250,11 @@ const Home = ({ selectedCategory }) => {
                     alt={name}
                     style={{
                       width: "100%",
-                      height: "150px", 
+                      height: "180px", 
                       objectFit: "cover",  
-                      padding: "5px",
+                      padding: "10px",
                       margin: "0",
-                      borderRadius: "10px 10px 10px 10px", 
+                      borderRadius: "12px", 
                     }}
                   />
                   <div
@@ -290,7 +293,13 @@ const Home = ({ selectedCategory }) => {
                     </div>
                     <button
                       className="btn-hover color-9"
-                      style={{margin:'10px 25px 0px '  }}
+                      style={{
+                        margin: '0',
+                        width: '100%',
+                        padding: '0.75rem',
+                        fontSize: '0.9rem',
+                        fontWeight: '500'
+                      }}
                       onClick={(e) => {
                         e.preventDefault();
                         addToCart(product);
