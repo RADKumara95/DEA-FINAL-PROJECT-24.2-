@@ -22,27 +22,27 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 function App() {
-  const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
     console.log("Selected category:", category);
   };
 
-  const addToCart = (product) => {
-    const existingProduct = cart.find((item) => item.id === product.id);
-    if (existingProduct) {
-      setCart(
-        cart.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
-      );
-    } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
-    }
+  const handleClearCategory = () => {
+    setSelectedCategory("");
+    console.log("Category filter cleared");
+  };
+
+  const handleSearch = (keyword) => {
+    setSearchKeyword(keyword);
+    console.log("Search keyword:", keyword);
+  };
+
+  const handleClearSearch = () => {
+    setSearchKeyword("");
+    console.log("Search cleared");
   };
 
   return (
@@ -50,12 +50,21 @@ function App() {
       <AppProvider>
         <OrderProvider>
           <BrowserRouter>
-          <Navbar onSelectCategory={handleCategorySelect} />
+           <Navbar 
+             onSelectCategory={handleCategorySelect} 
+             selectedCategory={selectedCategory}
+             onSearch={handleSearch}
+           />
           <Routes>
             <Route
               path="/"
               element={
-                <Home addToCart={addToCart} selectedCategory={selectedCategory} />
+                <Home 
+                  selectedCategory={selectedCategory}
+                  onClearCategory={handleClearCategory}
+                  searchKeyword={searchKeyword}
+                  onClearSearch={handleClearSearch}
+                />
               }
             />
             <Route path="/login" element={<Login />} />

@@ -6,7 +6,7 @@ import AppContext from "../Context/Context";
 import Pagination from "./Pagination";
 import unplugged from "../assets/unplugged.png"
 
-const Home = ({ selectedCategory }) => {
+const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch }) => {
   const { addToCart } = useContext(AppContext);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,44 +32,64 @@ const Home = ({ selectedCategory }) => {
     setSortDir(dir);
   }, [searchParams]);
 
+  // Main effect to fetch products
   useEffect(() => {
     fetchProducts();
-  }, [currentPage, pageSize, sortBy, sortDir, selectedCategory]);
+  }, [currentPage, pageSize, sortBy, sortDir, selectedCategory, searchKeyword]);
 
   const fetchProducts = async () => {
     setLoading(true);
     setError("");
+    
     try {
-      let url = `/products?page=${currentPage}&size=${pageSize}&sortBy=${sortBy}&sortDir=${sortDir}`;
+      let url = "/products";
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        size: pageSize.toString(),
+        sortBy: sortBy,
+        sortDir: sortDir
+      });
+
+      // Add category filter if selected
+      if (selectedCategory) {
+        url = "/products/filter";
+        params.append("category", selectedCategory);
+      }
       
-      const response = await API.get(url);
+      // Add search keyword if provided
+      if (searchKeyword && searchKeyword.trim()) {
+        url = "/products/search";
+        params.append("keyword", searchKeyword.trim());
+      }
+
+      const response = await API.get(`${url}?${params.toString()}`);
+      console.log("API Response:", response.data);
       
+      // Handle paginated response
       if (response.data.content) {
-        // Paginated response
-        const productsData = response.data.content;
-        const updatedProducts = await fetchProductImages(productsData);
-        setProducts(updatedProducts);
+        const productsWithImages = await fetchProductImages(response.data.content);
+        setProducts(productsWithImages);
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);
-      } else if (Array.isArray(response.data)) {
-        // Non-paginated response (fallback)
-        const updatedProducts = await fetchProductImages(response.data);
-        const filtered = selectedCategory
-          ? updatedProducts.filter((p) => p.category === selectedCategory)
-          : updatedProducts;
-        setProducts(filtered);
+      } else {
+        // Handle non-paginated response (fallback)
+        const productsArray = Array.isArray(response.data) ? response.data : [];
+        const productsWithImages = await fetchProductImages(productsArray);
+        setProducts(productsWithImages);
         setTotalPages(1);
-        setTotalElements(filtered.length);
+        setTotalElements(productsArray.length);
       }
     } catch (err) {
       console.error("Error fetching products:", err);
-      setError("Failed to load products");
+      setError(err.response?.data?.message || "Failed to load products. Please try again later.");
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
   const fetchProductImages = async (productsData) => {
+    console.log("Fetching images for products:", productsData);
     return Promise.all(
       productsData.map(async (product) => {
         try {
@@ -81,7 +101,8 @@ const Home = ({ selectedCategory }) => {
           return { ...product, imageUrl };
         } catch (error) {
           console.error("Error fetching image for product ID:", product.id, error);
-          return { ...product, imageUrl: null };
+          // Use fallback image from assets
+          return { ...product, imageUrl: unplugged };
         }
       })
     );
@@ -113,10 +134,6 @@ const Home = ({ selectedCategory }) => {
     });
     setSearchParams(newSearchParams);
   };
-
-  const filteredProducts = selectedCategory
-    ? products.filter((product) => product.category === selectedCategory)
-    : products;
 
   if (loading) {
     return (
@@ -185,7 +202,37 @@ const Home = ({ selectedCategory }) => {
 
         <div className="mb-3">
           <p className="text-muted">
-            Showing {filteredProducts.length} of {totalElements} products
+            {(selectedCategory || searchKeyword) && (
+              <div className="mb-2">
+                {selectedCategory && (
+                  <span className="badge bg-primary me-2">
+                    Category: {selectedCategory}
+                    <button 
+                      className="btn-close btn-close-white ms-2" 
+                      style={{ fontSize: "0.7rem" }}
+                      onClick={() => {
+                        onClearCategory && onClearCategory();
+                      }}
+                      aria-label="Clear category filter"
+                    ></button>
+                  </span>
+                )}
+                {searchKeyword && (
+                  <span className="badge bg-info me-2">
+                    Search: "{searchKeyword}"
+                    <button 
+                      className="btn-close btn-close-white ms-2" 
+                      style={{ fontSize: "0.7rem" }}
+                      onClick={() => {
+                        onClearSearch && onClearSearch();
+                      }}
+                      aria-label="Clear search"
+                    ></button>
+                  </span>
+                )}
+              </div>
+            )}
+            Showing {products.length} of {totalElements} products
             {currentPage > 0 && ` (Page ${currentPage + 1} of ${totalPages})`}
           </p>
         </div>
@@ -200,7 +247,7 @@ const Home = ({ selectedCategory }) => {
             padding: "0",
           }}
         >
-          {filteredProducts.length === 0 ? (
+          {products.length === 0 ? (
             <h2
               className="text-center"
               style={{
@@ -210,18 +257,14 @@ const Home = ({ selectedCategory }) => {
                 alignItems: "center",
               }}
             >
-              No Products Available
+              {selectedCategory 
+                ? `No Products Available in "${selectedCategory}" Category` 
+                : "No Products Available"}
             </h2>
           ) : (
-            filteredProducts.map((product) => {
+            products.map((product) => {
             const { id, brand, name, price, productAvailable, imageUrl } =
               product;
-            const cardStyle = {
-              width: "18rem",
-              height: "12rem",
-              boxShadow: "rgba(0, 0, 0, 0.24) 0px 2px 3px",
-              backgroundColor: productAvailable ? "#fff" : "#ccc",
-            };
             return (
               <div
                 className="card mb-3"
@@ -243,10 +286,10 @@ const Home = ({ selectedCategory }) => {
               >
                 <Link
                   to={`/product/${id}`}
-                  style={{ textDecoration: "none", color: "inherit" }}
+                  style={{ textDecoration: "none", color: "inherit", flexGrow: 1, display: "flex", flexDirection: "column" }}
                 >
                   <img
-                    src={imageUrl}
+                    src={imageUrl || unplugged}
                     alt={name}
                     style={{
                       width: "100%",
@@ -287,29 +330,31 @@ const Home = ({ selectedCategory }) => {
                         className="card-text"
                         style={{ fontWeight: "600", fontSize: "1.1rem",marginBottom:'5px' }}
                       >
-                        <i class="bi bi-currency-rupee"></i>
+                        <i className="bi bi-currency-rupee"></i>
                         {price}
                       </h5>
                     </div>
-                    <button
-                      className="btn-hover color-9"
-                      style={{
-                        margin: '0',
-                        width: '100%',
-                        padding: '0.75rem',
-                        fontSize: '0.9rem',
-                        fontWeight: '500'
-                      }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        addToCart(product);
-                      }}
-                      disabled={!productAvailable}
-                    >
-                      {productAvailable ? "Add to Cart" : "Out of Stock"}
-                    </button> 
                   </div>
                 </Link>
+                <button
+                  className="btn-hover color-9"
+                  style={{
+                    margin: '10px',
+                    width: 'calc(100% - 20px)',
+                    padding: '0.75rem',
+                    fontSize: '0.9rem',
+                    fontWeight: '500'
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addToCart(product);
+                    alert("Product added to cart!");
+                  }}
+                  disabled={!productAvailable}
+                >
+                  {productAvailable ? "Add to Cart" : "Out of Stock"}
+                </button>
               </div>
             );
           })

@@ -93,8 +93,10 @@ export const AppProvider = ({ children }) => {
    */
   const refreshData = async () => {
     try {
-      const response = await axios.get("/products");
-      setData(response.data); // Update product data state
+      const response = await axios.get("/products?page=0&size=1000");
+      // Handle paginated response - extract content array
+      const products = response.data.content || response.data || [];
+      setData(products);
       setIsError(""); // Clear any previous errors
     } catch (error) {
       setIsError(error.message); // Store error message for display
