@@ -6,10 +6,9 @@ import com.cart.ecom_proj.model.Product;
 import com.cart.ecom_proj.repo.OrderRepository;
 import com.cart.ecom_proj.repo.ProductRepo;
 import com.opencsv.CSVWriter;
-import com.opencsv.exceptions.CsvException;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
+import com.itextpdf.layout.Document; 
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
@@ -25,7 +24,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 @Service
 public class ReportService {

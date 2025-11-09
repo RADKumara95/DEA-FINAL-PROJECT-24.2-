@@ -2,8 +2,8 @@ package com.cart.ecom_proj.controller;
 
 import com.cart.ecom_proj.service.ReportService;
 import com.cart.ecom_proj.service.UserService;
-import com.cart.ecom_proj.model.Order;
 import com.cart.ecom_proj.model.User;
+import com.cart.ecom_proj.model.UserRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class ReportController {
         User current = getCurrentUser();
         // Admins should be allowed; otherwise verify ownership
         // We'll attempt to fetch order and ensure ownership when not admin
-        boolean isAdmin = current.getRoles() != null && current.getRoles().stream().anyMatch(r -> r.getName().contains("ADMIN"));
+        boolean isAdmin = current.getUserRoles() != null && current.getUserRoles().stream().anyMatch(r -> r.getRole().contains("ADMIN"));
 
         if (!isAdmin) {
             // check ownership
