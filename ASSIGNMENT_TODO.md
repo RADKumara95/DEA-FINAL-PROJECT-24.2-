@@ -1,8 +1,3 @@
-*
-
-
-
-
 # Full-Stack E-commerce Application - Assignment TODO List
 
 ## 📋 Project Information
@@ -44,6 +39,8 @@
 ---
 
 ## 🔴 Critical Missing Requirements
+
+## NOTE: The optional ones and some are commented out, do not implement them.
 
 ### 1. User Accounts & Authentication ❌ (HIGH PRIORITY)
 
@@ -212,7 +209,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 - [✓] Create `PrivateRoute.jsx` component
 - [✓] Update `axios.jsx` with auth configuration
 
-- [ ] Create `Register.jsx` component in `components` folder:
+- [✓] Create `Register.jsx` component in `components` folder:
   - Form fields: username, email, password, confirmPassword, firstName, lastName, phoneNumber
   - Client-side validation:
     - Username: 3-50 characters, alphanumeric
@@ -223,29 +220,29 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Redirect to login on successful registration
   - Display backend error messages
 
-- [ ] Create `Profile.jsx` component in `components` folder:
+- [✓] Create `Profile.jsx` component in `components` folder:
   - Display user information (username, email, firstName, lastName, phoneNumber, roles)
   - Edit profile form to update firstName, lastName, phoneNumber, email
   - Protected route - only accessible to authenticated users
   - Form validation and error handling
 
-- [ ] Create `PrivateRoute.jsx` component:
+- [✓] Create `PrivateRoute.jsx` component:
   - Wrapper component to protect routes
   - Check authentication status
   - Redirect to login if not authenticated
 
-- [ ] Update `axios.jsx` to:
+- [✓] Update `axios.jsx` to:
   - Set `withCredentials: true` for all requests
   - Add CSRF token to headers for POST, PUT, DELETE requests
   - Intercept 401 responses to redirect to login
 
-- [ ] Update `App.jsx`:
+- [✓] Update `App.jsx`:
   - Wrap with `AuthProvider`
   - Add routes: `/login`, `/register`, `/profile`
   - Protect routes: `/add_product`, `/product/update/:id` should require authentication
   - Show different navbar items based on auth status
 
-- [ ] Update `Navbar.jsx`:
+- [✓] Update `Navbar.jsx`:
   - Show "Login" and "Register" buttons when not authenticated
   - Show "Profile" and "Logout" buttons when authenticated
   - Display username when logged in
@@ -270,7 +267,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - [✓] Checkout.jsx
 - [✓] Add order-related routes and navigation
 
-- [ ] Create `OrderItem` entity in `model` package with fields:
+- [✓] Create `OrderItem` entity in `model` package with fields:
   - `Long id` (Primary Key, Auto-generated)
   - `Order order` (ManyToOne relationship, fetch LAZY)
   - `Product product` (ManyToOne relationship, fetch EAGER)
@@ -278,16 +275,16 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - `BigDecimal priceAtOrder` (not null, store price at time of order)
   - `BigDecimal subtotal` (calculated: quantity * priceAtOrder)
 
-- [ ] Create enum `OrderStatus` with values:
+- [✓] Create enum `OrderStatus` with values:
   - PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
 
-- [ ] Create enum `PaymentMethod` with values:
+- [✓] Create enum `PaymentMethod` with values:
   - CASH_ON_DELIVERY, CREDIT_CARD, DEBIT_CARD, UPI, NET_BANKING
 
-- [ ] Create enum `PaymentStatus` with values:
+- [✓] Create enum `PaymentStatus` with values:
   - PENDING, PAID, FAILED, REFUNDED
 
-- [ ] Update `Product` entity:
+- [✓] Update `Product` entity:
   - Add `List<OrderItem> orderItems` (OneToMany relationship)
   - Add audit fields: `LocalDateTime createdAt`, `LocalDateTime updatedAt`, `String createdBy`
   - Add `@EntityListeners(AuditingEntityListener.class)` annotation
@@ -295,10 +292,10 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Add `@LastModifiedDate` on `updatedAt`
   - Add `@CreatedBy` on `createdBy`
 
-- [ ] Update `User` entity:
+- [✓] Update `User` entity:
   - Add `List<Order> orders` (OneToMany relationship)
 
-- [ ] Enable JPA Auditing:
+- [✓] Enable JPA Auditing:
   - Create `JpaConfig` class with `@Configuration` and `@EnableJpaAuditing`
   - Implement `AuditorAware<String>` to return current username
 
@@ -344,13 +341,13 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - `PUT /api/admin/orders/{id}/status` - update order status (admin/seller only)
   - `DELETE /api/admin/orders/{id}` - delete order (admin only)
 
-- [ ] Add proper security annotations to `OrderController`:
+- [✓] Add proper security annotations to `OrderController`:
   - `@PreAuthorize("isAuthenticated()")` on user order endpoints
   - `@PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")` on admin endpoints
 
 #### 2.5 Frontend - Order Management
-- [ ] Create `OrderContext.jsx` for order state management
-- [ ] Create `Checkout.jsx` component:
+- [✓] Create `OrderContext.jsx` for order state management
+- [✓] Create `Checkout.jsx` component:
   - Display cart items summary
   - Form for shipping address, billing address, phone, payment method
   - Validation for all required fields
@@ -359,7 +356,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Clear cart after successful order
   - Redirect to order confirmation page
 
-- [ ] Create `OrderList.jsx` component:
+- [✓] Create `OrderList.jsx` component:
   - Display user's orders in a table/cards
   - Show order ID, date, status, total amount
   - Pagination controls
@@ -367,14 +364,14 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Sort by date (newest/oldest)
   - Link to order details
 
-- [ ] Create `OrderDetails.jsx` component:
+- [✓] Create `OrderDetails.jsx` component:
   - Display full order information
   - List of order items with product details
   - Order status timeline
   - Cancel button (if order is PENDING/CONFIRMED)
   - Download invoice button (future enhancement)
 
-- [ ] Create `AdminOrders.jsx` component (admin/seller only):
+- [✓] Create `AdminOrders.jsx` component (admin/seller only):
   - Display all orders with pagination
   - Filter by status
   - Search by order ID or customer name
@@ -382,16 +379,16 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - View order details
   - Delete order option
 
-- [ ] Update `Cart.jsx`:
+- [✓] Update `Cart.jsx`:
   - Add "Proceed to Checkout" button
   - Link to Checkout component
   - Validate stock availability before checkout
 
-- [ ] Update `Navbar.jsx`:
+- [✓] Update `Navbar.jsx`:
   - Add "My Orders" link for authenticated users
   - Add "Manage Orders" link for admin/seller
 
-- [ ] Add routes in `App.jsx`:
+- [✓] Add routes in `App.jsx`:
   - `/checkout` - Checkout component (protected)
   - `/orders` - OrderList component (protected)
   - `/orders/:id` - OrderDetails component (protected)
@@ -607,8 +604,8 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 - [ ] Create `CsrfController` to expose CSRF token:
   - `GET /api/csrf` - returns CSRF token for initial page load
 
-#### 5.2 Frontend CSRF Handling
-- [ ] Update `axios.jsx`:
+-#### 5.2 Frontend CSRF Handling
+- [✓] Update `axios.jsx`:
   - Function to read CSRF token from cookie
   - Add CSRF token to headers for POST, PUT, DELETE requests
   - Header name: `X-XSRF-TOKEN`
@@ -670,7 +667,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
     - Show preview of selected image
     - Display validation errors
 
-#### 6.3 Email/SMS Notification ❌ (RECOMMENDED)
+<!-- #### 6.3 Email/SMS Notification ❌ (RECOMMENDED)
 - [ ] Add email dependency to `pom.xml`:
   ```xml
   <dependency>
@@ -704,15 +701,15 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 - [ ] Integrate email sending:
   - Call `sendWelcomeEmail()` in `UserService.registerUser()` after successful registration
   - Call `sendOrderConfirmationEmail()` in `OrderService.createOrder()` after order creation
-  - Call `sendOrderStatusUpdateEmail()` in `OrderService.updateOrderStatus()` when status changes
+  - Call `sendOrderStatusUpdateEmail()` in `OrderService.updateOrderStatus()` when status changes -->
 
-- [ ] **Optional**: Add email verification:
+<!-- - [ ] **Optional**: Add email verification:
   - Add `boolean emailVerified` field to `User` entity
   - Add `String verificationToken` field to `User` entity
   - Generate verification token on registration
   - Send verification email with token link
   - Create endpoint `GET /api/auth/verify?token=xxx` to verify email
-  - Prevent login if email not verified
+  - Prevent login if email not verified -->
 
 #### 6.4 Soft Deletes / Audit Trail ❌ (RECOMMENDED)
 - [ ] Add soft delete fields to entities:
@@ -742,7 +739,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Add `@CreatedDate`, `@LastModifiedDate`, `@CreatedBy`, `@LastModifiedBy` annotations
   - Implement `AuditorAware<String>` to return current username
 
-#### 6.5 Caching ❌ (OPTIONAL BUT RECOMMENDED)
+<!-- #### 6.5 Caching ❌ (OPTIONAL BUT RECOMMENDED)
 - [ ] Add cache dependency to `pom.xml`:
   ```xml
   <dependency>
@@ -767,9 +764,9 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   spring.cache.cache-names=products,product,users
   ```
 
-- [ ] **Optional**: Use Redis for distributed caching in production
+- [ ] **Optional**: Use Redis for distributed caching in production -->
 
-#### 6.6 External API Integration ❌ (OPTIONAL)
+<!-- #### 6.6 External API Integration ❌ (OPTIONAL)
 - [ ] **Payment Gateway Integration** (e.g., Stripe, Razorpay, PayPal):
   - Add payment gateway SDK dependency
   - Create `PaymentService` class
@@ -786,9 +783,9 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 
 - [ ] **OR SMS Notification** (e.g., Twilio):
   - Send order confirmation SMS
-  - Send OTP for login verification
+  - Send OTP for login verification -->
 
-#### 6.7 Reporting/Export ❌ (OPTIONAL)
+<!-- #### 6.7 Reporting/Export ❌ (OPTIONAL)
 - [ ] Add PDF generation dependency:
   ```xml
   <dependency>
@@ -824,7 +821,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Add "Export Products" button in admin products page
   - Add "Generate Report" button in admin dashboard
 
----
+--- -->
 
 ### 7. Testing ❌ (HIGH PRIORITY)
 
@@ -843,7 +840,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   </dependency>
   ```
 
-- [ ] Create `ProductServiceTest` in `test` folder:
+- [✓] Create `ProductServiceTest` in `test` folder:
   - Test `getAllProducts()` - verify returns list
   - Test `getProductById()` - verify returns correct product
   - Test `getProductById()` with invalid ID - verify throws exception
@@ -854,7 +851,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Use `@MockBean` for repository
   - Use `Mockito` for mocking
 
-- [ ] Create `ProductControllerTest`:
+- [✓] Create `ProductControllerTest`:
   - Test `GET /api/products` - verify returns 200 and product list
   - Test `GET /api/product/{id}` - verify returns 200 and product
   - Test `GET /api/product/{id}` with invalid ID - verify returns 404
@@ -871,7 +868,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Test `getUserByUsername()` - verify returns correct user
   - Test password encoding
 
-- [ ] Create `AuthControllerTest`:
+- [✓] Create `AuthControllerTest`:
   - Test `POST /api/auth/register` - verify returns 201
   - Test `POST /api/auth/register` with invalid data - verify returns 400
   - Test `POST /api/auth/login` - verify returns 200 with session cookie
@@ -948,10 +945,10 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 
 ---
 
-### 8. API Documentation ❌ (HIGH PRIORITY)
+### 8. API Documentation ✅ (COMPLETED)
 
 #### 8.1 Backend - Swagger/OpenAPI
-- [ ] Add Swagger dependencies to `pom.xml`:
+- [✓] Add Swagger dependencies to `pom.xml`:
   ```xml
   <dependency>
       <groupId>org.springdoc</groupId>
@@ -960,29 +957,29 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   </dependency>
   ```
 
-- [ ] Configure Swagger in `application.properties`:
+- [✓] Configure Swagger in `application.properties`:
   ```properties
   springdoc.api-docs.path=/api-docs
   springdoc.swagger-ui.path=/swagger-ui.html
   springdoc.swagger-ui.enabled=true
   ```
 
-- [ ] Add Swagger annotations to controllers:
+- [✓] Add Swagger annotations to controllers:
   - `@Tag(name = "Products", description = "Product management APIs")` on `ProductController`
   - `@Operation(summary = "Get all products", description = "Retrieve list of all products")` on methods
   - `@ApiResponse(responseCode = "200", description = "Successful")` on methods
   - `@ApiResponse(responseCode = "404", description = "Not found")` on methods
   - Add similar annotations to `AuthController`, `OrderController`
 
-- [ ] Create `OpenApiConfig` class:
+- [✓] Create `OpenApiConfig` class:
   - Configure API info (title, version, description, contact, license)
   - Configure security schemes (cookie-based session)
 
-- [ ] Allow Swagger UI in `SecurityConfig`:
+- [✓] Allow Swagger UI in `SecurityConfig`:
   - Add `/swagger-ui/**`, `/api-docs/**` to public endpoints
 
 #### 8.2 Postman Collection
-- [ ] Create Postman collection with all endpoints:
+- [✓] Create Postman collection with all endpoints:
   - **Auth Endpoints**:
     - POST /api/auth/register
     - POST /api/auth/login
@@ -1007,13 +1004,13 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
     - PUT /api/admin/orders/{id}/status (admin)
     - DELETE /api/admin/orders/{id} (admin)
 
-- [ ] Add environment variables in Postman:
+- [✓] Add environment variables in Postman:
   - `baseUrl` = `http://localhost:8080/api`
   - `authToken` = (for session cookie)
 
-- [ ] Add pre-request scripts for authentication
-- [ ] Add tests for each endpoint to verify responses
-- [ ] Export collection as JSON file: `postman_collection.json`
+- [✓] Add pre-request scripts for authentication
+- [✓] Add tests for each endpoint to verify responses
+- [✓] Export collection as JSON file: `postman_collection.json`
 
 ---
 
@@ -1039,42 +1036,9 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
     spring.jpa.show-sql=true
     spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
     ```
-
-- [ ] **Option 2: PostgreSQL**:
-  - Add PostgreSQL dependency to `pom.xml`:
-    ```xml
-    <dependency>
-        <groupId>org.postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <scope>runtime</scope>
-    </dependency>
-    ```
-  - Update `application.properties`:
-    ```properties
-    spring.datasource.url=jdbc:postgresql://localhost:5432/ecommerce_db
-    spring.datasource.username=postgres
-    spring.datasource.password=${DB_PASSWORD}
-    spring.datasource.driver-class-name=org.postgresql.Driver
-    spring.jpa.hibernate.ddl-auto=update
-    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-    ```
-
-- [ ] Create database schema:
-  - Run application to auto-create tables (ddl-auto=update)
-  - Or create `schema.sql` with CREATE TABLE statements
-
-- [ ] Create seed data in `data.sql`:
-  - Insert default roles
-  - Insert sample products
-  - Insert admin user
-
-- [ ] Keep H2 for testing:
-  - Create `application-test.properties` with H2 configuration
-  - Use `@ActiveProfiles("test")` in test classes
-
 ---
 
-### 10. Code Quality & Best Practices ❌ (MEDIUM PRIORITY)
+<!-- ### 10. Code Quality & Best Practices ❌ (MEDIUM PRIORITY)
 
 #### 10.1 Backend Code Improvements
 - [ ] Remove unused imports and code
@@ -1126,7 +1090,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - Email credentials
   - Secret keys
 
----
+--- -->
 
 ### 11. Documentation ❌ (HIGH PRIORITY)
 
@@ -1165,7 +1129,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 
 ---
 
-### 12. Deployment & Production Readiness ❌ (OPTIONAL BUT RECOMMENDED)
+<!-- ### 12. Deployment & Production Readiness ❌ (OPTIONAL BUT RECOMMENDED)
 
 #### 12.1 Backend Production Configuration
 - [ ] Create `application-prod.properties`:
@@ -1216,9 +1180,9 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 - [ ] **Database Deployment**:
   - Use managed database service (AWS RDS, Railway, etc.)
 
----
+--- -->
 
-### 13. Git & Version Control ✅ (PARTIAL)
+<!-- ### 13. Git & Version Control ✅ (PARTIAL)
 
 - [x] GitHub repository exists
 - [ ] Clean up commit history (if needed)
@@ -1237,7 +1201,7 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
   - IDE files (.idea, .vscode)
 - [ ] Remove `target/` and `node_modules/` from repository if committed
 
----
+--- -->
 
 ## 📊 Priority Summary
 
@@ -1248,11 +1212,11 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 4. ✅ Bean Validation with error handling
 5. ✅ CSRF protection
 6. ✅ Role-based authorization
-7. ✅ At least 2 "Beyond CRUD" features (File Upload ✓, need 1 more)
+7. ✅ At least 2 "Beyond CRUD" features (File Upload ✓, Advanced Search ✓)
 8. ✅ Testing (unit + integration)
 9. ✅ API Documentation (Swagger + Postman)
-10. ✅ Updated README with setup & screenshots
-11. ✅ Database migration (H2 → MySQL/PostgreSQL)
+10. ❌ Updated README with setup & screenshots
+11. ❌ Database migration (H2 → MySQL/PostgreSQL)
 
 ### Should Have (Important for Quality)
 1. Soft deletes & audit trail
@@ -1308,4 +1272,4 @@ Use Lombok, proper exceptions, logging (`@Slf4j`), and clean architecture. Gener
 ---
 
 **Created**: November 5, 2025  
-**Last Updated**: November 5, 2025
+**Last Updated**: November 9, 2025
