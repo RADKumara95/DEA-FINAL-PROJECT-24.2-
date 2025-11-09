@@ -87,5 +87,8 @@ public class Order {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
     }
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 }
 
