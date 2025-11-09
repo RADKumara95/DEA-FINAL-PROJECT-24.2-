@@ -96,9 +96,22 @@ const OrderDetails = () => {
     }
   };
 
-  const handleDownloadInvoice = () => {
-    // Future enhancement - placeholder
-    alert("Invoice download feature coming soon!");
+  const handleDownloadInvoice = async () => {
+    try {
+      const response = await API.get(`/reports/invoice/${id}`, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download invoice:', err);
+      setError(err.response?.data?.message || 'Failed to download invoice');
+    }
   };
 
   const canCancel =
