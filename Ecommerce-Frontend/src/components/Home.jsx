@@ -152,36 +152,33 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch 
 
   if (loading) {
     return (
-      <div className="text-center" style={{ padding: "18rem" }}>
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+      <div className="flex justify-center items-center min-h-screen pt-20">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <h2 className="text-center" style={{ padding: "18rem" }}>
-        <img src={unplugged} alt="Error" style={{ width: '100px', height: '100px' }}/>
-        <p>{error}</p>
-      </h2>
+      <div className="flex flex-col justify-center items-center min-h-screen pt-20 text-center">
+        <img src={unplugged} alt="Error" className="w-24 h-24 mb-4"/>
+        <p className="text-red-500 text-lg">{error}</p>
+      </div>
     );
   }
 
   return (
     <>
-      <div style={{ marginTop: "80px", padding: "20px" }}>
+      <div className="mt-20 p-5">
         {/* Filters and Sorting */}
-        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-          <div className="d-flex align-items-center gap-3">
-            <label htmlFor="pageSize" className="form-label mb-0">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div className="flex items-center gap-3">
+            <label htmlFor="pageSize" className="font-medium text-gray-700 dark:text-gray-300">
               Items per page:
             </label>
             <select
               id="pageSize"
-              className="form-select"
-              style={{ width: "auto" }}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               value={pageSize}
               onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
             >
@@ -191,14 +188,13 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch 
             </select>
           </div>
           
-          <div className="d-flex align-items-center gap-3">
-            <label htmlFor="sortBy" className="form-label mb-0">
+          <div className="flex items-center gap-3">
+            <label htmlFor="sortBy" className="font-medium text-gray-700 dark:text-gray-300">
               Sort by:
             </label>
             <select
               id="sortBy"
-              className="form-select"
-              style={{ width: "auto" }}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               value={`${sortBy}-${sortDir}`}
               onChange={(e) => {
                 const [newSortBy, newSortDir] = e.target.value.split("-");
@@ -215,164 +211,117 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch 
           </div>
         </div>
 
-        <div className="mb-3">
-          <p className="text-muted">
-            {(selectedCategory || searchKeyword) && (
-              <div className="mb-2">
-                {selectedCategory && (
-                  <span className="badge bg-primary me-2">
-                    Category: {selectedCategory}
-                    <button 
-                      className="btn-close btn-close-white ms-2" 
-                      style={{ fontSize: "0.7rem" }}
-                      onClick={() => {
-                        onClearCategory && onClearCategory();
-                      }}
-                      aria-label="Clear category filter"
-                    ></button>
-                  </span>
-                )}
-                {searchKeyword && (
-                  <span className="badge bg-info me-2">
-                    Search: "{searchKeyword}"
-                    <button 
-                      className="btn-close btn-close-white ms-2" 
-                      style={{ fontSize: "0.7rem" }}
-                      onClick={() => {
-                        onClearSearch && onClearSearch();
-                      }}
-                      aria-label="Clear search"
-                    ></button>
-                  </span>
-                )}
-              </div>
-            )}
+        {/* Filter badges */}
+        <div className="mb-4">
+          {(selectedCategory || searchKeyword) && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {selectedCategory && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  Category: {selectedCategory}
+                  <button 
+                    className="ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                    onClick={() => {
+                      onClearCategory && onClearCategory();
+                    }}
+                    aria-label="Clear category filter"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {searchKeyword && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200">
+                  Search: "{searchKeyword}"
+                  <button 
+                    className="ml-2 text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-200"
+                    onClick={() => {
+                      onClearSearch && onClearSearch();
+                    }}
+                    aria-label="Clear search"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
             Showing {products.length} of {totalElements} products
             {currentPage > 0 && ` (Page ${currentPage + 1} of ${totalPages})`}
           </p>
         </div>
 
-        <div
-          className="grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "2rem",
-            marginBottom: "30px",
-            padding: "0",
-          }}
-        >
+        {/* Products Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6 mb-8">
           {products.length === 0 ? (
-            <h2
-              className="text-center"
-              style={{
-                gridColumn: "1 / -1",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {selectedCategory 
-                ? `No Products Available in "${selectedCategory}" Category` 
-                : "No Products Available"}
-            </h2>
+            <div className="col-span-full flex justify-center items-center py-20">
+              <h2 className="text-xl text-gray-600 dark:text-gray-400 text-center">
+                {selectedCategory 
+                  ? `No Products Available in "${selectedCategory}" Category` 
+                  : "No Products Available"}
+              </h2>
+            </div>
           ) : (
             products.map((product) => {
-            const { id, brand, name, price, productAvailable, imageUrl } =
-              product;
-            return (
-              <div
-                className="card mb-3"
-                style={{
-                  width: "100%",
-                  height: "380px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  borderRadius: "12px",
-                  overflow: "hidden", 
-                  backgroundColor: productAvailable ? "#fff" : "#f8f9fa",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent:'flex-start',
-                  alignItems:'stretch',
-                  border: productAvailable ? "1px solid #e9ecef" : "1px solid #dee2e6",
-                  transition: "transform 0.3s ease, box-shadow 0.3s ease"
-                }}
-                key={id}
-              >
-                <Link
-                  to={`/product/${id}`}
-                  style={{ textDecoration: "none", color: "inherit", flexGrow: 1, display: "flex", flexDirection: "column" }}
+              const { id, brand, name, price, productAvailable, imageUrl } = product;
+              return (
+                <div
+                  className={`card-shell overflow-hidden flex flex-col h-96 transition-transform duration-300 ${
+                    productAvailable
+                      ? ''
+                      : 'opacity-75 border-dashed'
+                  }`}
+                  key={id}
                 >
-                  <img
-                    src={imageUrl || unplugged}
-                    alt={name}
-                    style={{
-                      width: "100%",
-                      height: "180px", 
-                      objectFit: "cover",  
-                      padding: "10px",
-                      margin: "0",
-                      borderRadius: "12px", 
-                    }}
-                  />
-                  <div
-                    className="card-body"
-                    style={{
-                      flexGrow: 1,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      padding: "10px",
-                    }}
+                  <Link
+                    to={`/product/${id}`}
+                    className="flex-1 flex flex-col group"
                   >
-                    <div>
-                      <h5
-                        className="card-title"
-                        style={{ margin: "0 0 10px 0", fontSize: "1.2rem" }}
-                      >
-                        {name.toUpperCase()}
-                      </h5>
-                      <i
-                        className="card-brand"
-                        style={{ fontStyle: "italic", fontSize: "0.8rem" }}
-                      >
-                        {"~ " + brand}
-                      </i>
+                    <div className="relative overflow-hidden">
+                      <img
+                        src={imageUrl || unplugged}
+                        alt={name}
+                        className="w-full h-44 object-cover p-2 rounded-xl transition-transform duration-300 group-hover:scale-105"
+                      />
                     </div>
-                    <hr className="hr-line" style={{ margin: "10px 0" }} />
-                    <div className="home-cart-price">
-                      <h5
-                        className="card-text"
-                        style={{ fontWeight: "600", fontSize: "1.1rem",marginBottom:'5px' }}
-                      >
-                        <i className="bi bi-currency-rupee"></i>
-                        {price}
-                      </h5>
+                    <div className="flex-1 p-4 flex flex-col justify-between">
+                      <div>
+                        <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {name.toUpperCase()}
+                        </h5>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 italic mb-3">
+                          ~ {brand}
+                        </p>
+                      </div>
+                      <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                        <div className="flex items-center text-lg font-bold text-green-600 dark:text-green-400">
+                          <i className="bi bi-currency-rupee"></i>
+                          {price}
+                        </div>
+                      </div>
                     </div>
+                  </Link>
+                  <div className="p-4 pt-0">
+                    <button
+                      className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-300 ${
+                        productAvailable
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl'
+                          : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addToCart(product);
+                        alert("Product added to cart!");
+                      }}
+                      disabled={!productAvailable}
+                    >
+                      {productAvailable ? "Add to Cart" : "Out of Stock"}
+                    </button>
                   </div>
-                </Link>
-                <button
-                  className="btn-hover color-9"
-                  style={{
-                    margin: '10px',
-                    width: 'calc(100% - 20px)',
-                    padding: '0.75rem',
-                    fontSize: '0.9rem',
-                    fontWeight: '500'
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    addToCart(product);
-                    alert("Product added to cart!");
-                  }}
-                  disabled={!productAvailable}
-                >
-                  {productAvailable ? "Add to Cart" : "Out of Stock"}
-                </button>
-              </div>
-            );
-          })
+                </div>
+              );
+            })
           )}
         </div>
 

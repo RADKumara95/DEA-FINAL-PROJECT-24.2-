@@ -7,22 +7,29 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const getInitialTheme = () => {
+    if (typeof window === "undefined") {
+      return "light";
+    }
     const storedTheme = localStorage.getItem("theme");
-    return storedTheme ? storedTheme : "light-theme";
+    if (storedTheme === "dark" || storedTheme === "light") {
+      return storedTheme;
+    }
+    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+    return prefersDark ? "dark" : "light";
   };
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [theme, setTheme] = useState(getInitialTheme());
+  const [theme, setTheme] = useState(getInitialTheme);
   const [input, setInput] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [noResults, setNoResults] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  const fetchData = async (value) => {
+  const fetchData = async () => {
     try {
       const response = await API.get("/products");
       setSearchResults(response.data);
@@ -56,6 +63,7 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
     if (input.trim() && onSearch) {
       onSearch(input.trim());
       setShowSearchResults(false);
+      setIsMenuOpen(false);
       // Navigate to home page if not already there
       if (window.location.pathname !== "/") {
         navigate("/");
@@ -66,36 +74,29 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
   const handleSearchResultClick = (productId) => {
     setShowSearchResults(false);
     setInput("");
+    setIsMenuOpen(false);
     navigate(`/product/${productId}`);
   };
 
   const handleCategorySelect = (category) => {
-    console.log("📁 Category selected:", category);
-    console.log("📁 Current onSelectCategory function:", onSelectCategory);
-    setSelectedCategory(category);
-    
     if (onSelectCategory) {
       onSelectCategory(category);
-    } else {
-      console.error("📁 onSelectCategory prop is not provided!");
     }
     
     // Navigate to home page if not already there
     if (window.location.pathname !== "/") {
-      console.log("📁 Navigating to home page from:", window.location.pathname);
       navigate("/");
     }
   };
 
   const toggleTheme = () => {
-    const newTheme = theme === "dark-theme" ? "light-theme" : "dark-theme";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
   const handleLogout = async () => {
     await logout();
     navigate("/");
+    setIsMenuOpen(false);
   };
 
   const isAdminOrSeller = user?.roles?.some(role => 
@@ -103,7 +104,10 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
   );
 
   useEffect(() => {
-    document.body.className = theme;
+    localStorage.setItem("theme", theme);
+    const root = document.documentElement;
+    root.classList.toggle("dark", theme === "dark");
+    document.body.dataset.theme = theme;
   }, [theme]);
 
   // Categories must match the actual categories in the database
@@ -120,84 +124,121 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
   return (
     <>
       <header>
-        <nav className="navbar navbar-expand-lg fixed-top">
-          <div className="container-fluid">
-            <Link className="navbar-brand" to="/">
+        <nav className="app-navbar fixed top-0 left-0 w-full z-50 py-3 px-4">
+          <div className="container mx-auto flex flex-wrap items-center justify-between">
+            {/* Brand */}
+            <Link 
+              className="text-xl font-semibold tracking-tight text-current"
+              to="/"
+            >
               HiTeckKart
             </Link>
+
+            {/* Mobile menu button */}
             <button
-              className="navbar-toggler"
+              className="lg:hidden icon-button"
               type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent"
-              aria-expanded="false"
+              aria-controls="navbarContent"
+              aria-expanded={isMenuOpen}
               aria-label="Toggle navigation"
+              onClick={() => setIsMenuOpen((prev) => !prev)}
             >
-              <span className="navbar-toggler-icon"></span>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
             </button>
+
+            {/* Navigation content */}
             <div
-              className="collapse navbar-collapse"
-              id="navbarSupportedContent"
+              id="navbarContent"
+              className={`w-full lg:w-auto ${
+                isMenuOpen ? "mt-4 flex flex-col gap-4" : "hidden"
+              } lg:flex lg:flex-row lg:items-center lg:gap-0`}
             >
-              <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                <li className="nav-item">
-                  <Link className="nav-link active" aria-current="page" to="/">
+              {/* Left navigation */}
+              <ul className="flex flex-col lg:flex-row lg:items-center lg:space-x-2 mt-4 lg:mt-0 gap-1 lg:gap-0">
+                <li>
+                  <Link 
+                    className="nav-link"
+                    to="/"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     Home
                   </Link>
                 </li>
                 {isAuthenticated && isAdminOrSeller && (
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/add_product">
+                  <li>
+                    <Link 
+                      className="nav-link"
+                      to="/add_product"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
                       Add Product
                     </Link>
                   </li>
                 )}
                 {isAuthenticated && (
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/orders">
-                      <i className="bi bi-bag-check me-1"></i>
+                  <li>
+                    <Link 
+                      className="nav-link flex items-center"
+                      to="/orders"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <i className="bi bi-bag-check mr-2"></i>
                       My Orders
                     </Link>
                   </li>
                 )}
                 {isAuthenticated && isAdminOrSeller && (
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/admin/orders">
-                      <i className="bi bi-clipboard-data me-1"></i>
+                  <li>
+                    <Link 
+                      className="nav-link flex items-center"
+                      to="/admin/orders"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <i className="bi bi-clipboard-data mr-2"></i>
                       Manage Orders
                     </Link>
                   </li>
                 )}
 
-                <li className="nav-item dropdown">
-                  <a
-                    className="nav-link dropdown-toggle"
-                    href="/"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
+                {/* Categories dropdown */}
+                <li className="relative group">
+                  <button
+                    className="nav-link flex items-center"
+                    type="button"
                   >
                     Categories
-                  </a>
-
-                  <ul className="dropdown-menu">
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  <ul className="dropdown-panel absolute left-0 mt-1 w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                     <li>
                       <button
-                        className="dropdown-item"
-                        onClick={() => handleCategorySelect("")}
-                        style={{ fontWeight: selectedCategoryProp === "" ? "bold" : "normal" }}
+                        className={`nav-link w-full justify-start rounded-t-md ${
+                          selectedCategoryProp === "" ? "font-bold" : "font-normal"
+                        }`}
+                        onClick={() => {
+                          handleCategorySelect("");
+                          setIsMenuOpen(false);
+                        }}
                       >
                         All Categories
                       </button>
                     </li>
-                    <li><hr className="dropdown-divider" /></li>
+                    <li><hr className="border-gray-200 dark:border-gray-600" /></li>
                     {categories.map((category) => (
                       <li key={category}>
                         <button
-                          className="dropdown-item"
-                          onClick={() => handleCategorySelect(category)}
-                          style={{ fontWeight: selectedCategoryProp === category ? "bold" : "normal" }}
+                          className={`nav-link w-full justify-start ${
+                            selectedCategoryProp === category ? "font-bold" : "font-normal"
+                          }`}
+                          onClick={() => {
+                            handleCategorySelect(category);
+                            setIsMenuOpen(false);
+                          }}
                         >
                           {category}
                         </button>
@@ -206,78 +247,72 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
                   </ul>
                 </li>
               </ul>
-              <div className="navbar-right">
-                <button className="theme-btn" onClick={() => toggleTheme()}>
-                  {theme === "dark-theme" ? (
-                    <i className="bi bi-moon-fill"></i>
+
+              {/* Right side content */}
+              <div className="flex flex-col lg:flex-row lg:items-center lg:ml-auto space-y-4 lg:space-y-0 lg:space-x-4 mt-4 lg:mt-0">
+                {/* Theme toggle */}
+                <button 
+                  className="icon-button self-end lg:self-auto"
+                  onClick={() => toggleTheme()}
+                >
+                  {theme === "dark" ? (
+                    <i className="bi bi-moon-fill text-lg"></i>
                   ) : (
-                    <i className="bi bi-sun-fill"></i>
+                    <i className="bi bi-sun-fill text-lg"></i>
                   )}
                 </button>
 
-                <div className="navbar-search">
-                  <form onSubmit={handleSearchSubmit} className="d-flex">
+                {/* Search */}
+                <div className="relative min-w-72">
+                  <form onSubmit={handleSearchSubmit} className="flex">
                     <input
-                      className="form-control"
+                      className="search-input"
                       type="search"
                       placeholder="Search products..."
-                      aria-label="Search"
                       value={input}
                       onChange={(e) => handleChange(e.target.value)}
                       onFocus={() => setSearchFocused(true)}
                       onBlur={() => {
-                        // Delay hiding results to allow clicking
                         setTimeout(() => setSearchFocused(false), 200);
                       }}
                     />
                     <button 
-                      className="btn btn-outline-primary ms-1" 
+                      className="search-button"
                       type="submit"
-                      style={{ whiteSpace: "nowrap" }}
                     >
                       <i className="bi bi-search"></i>
                     </button>
                   </form>
+                  
+                  {/* Search results dropdown */}
                   {showSearchResults && (searchFocused || showSearchResults) && (
-                    <ul className="list-group position-absolute" style={{ 
-                      top: "100%", 
-                      left: 0, 
-                      right: 0, 
-                      zIndex: 1000,
-                      maxHeight: "300px",
-                      overflowY: "auto"
-                    }}>
+                    <ul className="dropdown-panel absolute top-full left-0 right-0 mt-1 max-h-80 overflow-y-auto z-50">
                       {searchResults.length > 0 ? (
                         <>
-                          <li className="list-group-item bg-light">
-                            <small className="text-muted">
-                              Click a product to view details, or press Enter to search all products
-                            </small>
+                          <li className="px-4 py-2 text-sm text-muted">
+                            Click a product to view details, or press Enter to search all products
                           </li>
                           {searchResults.slice(0, 5).map((result) => (
-                            <li key={result.id} className="list-group-item list-group-item-action">
+                            <li key={result.id} className="border-b border-gray-200 dark:border-gray-600 last:border-b-0">
                               <button
-                                className="btn btn-link text-start p-0 w-100"
-                                style={{ textDecoration: "none" }}
+                                className="nav-link w-full justify-start py-3"
                                 onClick={() => handleSearchResultClick(result.id)}
                               >
-                                <span>{result.name}</span>
-                                <small className="text-muted d-block">{result.brand}</small>
+                                <div className="font-medium">{result.name}</div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">{result.brand}</div>
                               </button>
                             </li>
                           ))}
                           {searchResults.length > 5 && (
-                            <li className="list-group-item bg-light">
-                              <small className="text-muted">
-                                {searchResults.length - 5} more results... Press Enter to see all
-                              </small>
+                            <li className="px-4 py-2 text-sm text-muted">
+                              {searchResults.length - 5} more results... Press Enter to see all
                             </li>
                           )}
                         </>
                       ) : (
                         noResults && (
-                          <li className="list-group-item">
-                            <p className="no-results-message mb-0">
+                          <li className="px-4 py-3">
+                            <p className="text-red-500 text-center mb-0">
                               No Product with such Name
                             </p>
                           </li>
@@ -287,56 +322,68 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
                   )}
                 </div>
 
-                <div className="navbar-actions">
-                  <Link to="/cart" className="cart-link">
-                    <i className="bi bi-cart"></i>
+                {/* Actions */}
+                <div className="flex items-center space-x-3">
+                  <Link 
+                    to="/cart" 
+                    className="nav-link flex items-center"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <i className="bi bi-cart mr-2"></i>
                     Cart
                   </Link>
 
-                  <div className="auth-section">
-                    {isAuthenticated ? (
-                      <div className="user-dropdown">
-                        <div className="dropdown">
-                          <button
-                            className="btn btn-outline-primary dropdown-toggle"
-                            type="button"
-                            id="userMenu"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
+                  {/* Auth section */}
+                  {isAuthenticated ? (
+                    <div className="relative group">
+                      <button
+                        className="nav-link border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center"
+                        type="button"
+                      >
+                        {user?.username || "User"}
+                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      <ul className="dropdown-panel absolute right-0 mt-1 w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <li>
+                          <Link 
+                            className="nav-link w-full justify-start rounded-t-md" 
+                            to="/profile"
+                            onClick={() => setIsMenuOpen(false)}
                           >
-                            {user?.username || "User"}
+                            Profile
+                          </Link>
+                        </li>
+                        <li><hr className="border-gray-200 dark:border-gray-600" /></li>
+                        <li>
+                          <button
+                            className="nav-link w-full justify-start rounded-b-md"
+                            onClick={handleLogout}
+                          >
+                            Logout
                           </button>
-                          <ul className="dropdown-menu" aria-labelledby="userMenu">
-                            <li>
-                              <Link className="dropdown-item" to="/profile">
-                                Profile
-                              </Link>
-                            </li>
-                            <li>
-                              <hr className="dropdown-divider" />
-                            </li>
-                            <li>
-                              <button
-                                className="dropdown-item"
-                                onClick={handleLogout}
-                              >
-                                Logout
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="auth-buttons">
-                        <Link to="/login" className="btn btn-outline-primary">
-                          Login
-                        </Link>
-                        <Link to="/register" className="btn btn-primary">
-                          Register
-                        </Link>
-                      </div>
-                    )}
-                  </div>
+                        </li>
+                      </ul>
+                    </div>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <Link 
+                        to="/login" 
+                        className="nav-link border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Login
+                      </Link>
+                      <Link 
+                        to="/register" 
+                        className="nav-link bg-blue-600 text-white hover:bg-blue-700"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Register
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
