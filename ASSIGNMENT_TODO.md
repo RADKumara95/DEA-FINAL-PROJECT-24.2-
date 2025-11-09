@@ -57,16 +57,16 @@
 - [✓] Create `CustomUserDetailsService` implementing `UserDetailsService`
 - [✓] Create basic `SecurityConfig` class
 
-- [ ] Create `UserRepository` interface extending `JpaRepository<User, Long>`
+- [✓] Create `UserRepository` interface extending `JpaRepository<User, Long>`
   - Add method: `Optional<User> findByUsername(String username)`
   - Add method: `Optional<User> findByEmail(String email)`
   - Add method: `boolean existsByUsername(String username)`
   - Add method: `boolean existsByEmail(String email)`
 
-- [ ] Create `RoleRepository` interface extending `JpaRepository<Role, Long>`
+- [✓] Create `RoleRepository` interface extending `JpaRepository<Role, Long>`
   - Add method: `Optional<Role> findByName(String name)`
 
-- [ ] Create `UserService` class with methods:
+- [✓] Create `UserService` class with methods:
   - `User registerUser(RegisterRequest request)` - hash password with BCrypt
   - `User getUserById(Long id)`
   - `User getUserByUsername(String username)`
@@ -75,24 +75,24 @@
   - `boolean existsByUsername(String username)`
   - `boolean existsByEmail(String email)`
 
-- [ ] Create `CustomUserDetailsService` implementing `UserDetailsService`
+- [✓] Create `CustomUserDetailsService` implementing `UserDetailsService`
   - Override `loadUserByUsername(String username)` method
   - Return `UserDetails` object with user info and authorities
 
-- [ ] Create DTOs for authentication:
+- [✓] Create DTOs for authentication:
   - `LoginRequest` (username, password)
   - `RegisterRequest` (username, email, password, firstName, lastName, phoneNumber)
   - `LoginResponse` (username, email, roles, message)
   - `UpdateUserRequest` (firstName, lastName, phoneNumber, email)
 
-- [ ] Create `AuthController` in `controller` package with endpoints:
+- [✓] Create `AuthController` in `controller` package with endpoints:
   - `POST /api/auth/register` - user registration with validation
   - `POST /api/auth/login` - user login (returns session cookie)
   - `POST /api/auth/logout` - user logout (invalidates session)
   - `GET /api/auth/me` - get current authenticated user
   - `PUT /api/auth/profile` - update current user profile
 
-- [ ] Create `SecurityConfig` class with `@Configuration` and `@EnableWebSecurity`:
+- [✓] Create `SecurityConfig` class with `@Configuration` and `@EnableWebSecurity`:
   - Configure `SecurityFilterChain` bean with:
     - Session management: `sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)`
     - Enable session management with `maximumSessions(1)`
@@ -105,14 +105,14 @@
   - Configure `PasswordEncoder` bean: `BCryptPasswordEncoder`
   - Configure `AuthenticationManager` bean
 
-- [ ] Configure CORS in `SecurityConfig` to:
+- [✓] Configure CORS in `SecurityConfig` to:
   - Allow origin: `http://localhost:5173` (React dev server)
   - Allow credentials: `true`
   - Allow methods: GET, POST, PUT, DELETE, OPTIONS
   - Allow headers: Content-Type, Authorization, X-XSRF-TOKEN
   - Expose headers: X-XSRF-TOKEN
 
-- [ ] Configure session cookies in `application.properties`:
+- [✓] Configure session cookies in `application.properties`:
   ```properties
   server.servlet.session.cookie.http-only=true
   server.servlet.session.cookie.secure=false
@@ -120,24 +120,22 @@
   server.servlet.session.timeout=30m
   ```
 
-- [ ] Create production profile `application-prod.properties`:
+- [✓] Create production profile `application-prod.properties`:
   ```properties
   server.servlet.session.cookie.secure=true
   server.servlet.session.cookie.same-site=strict
   ```
 
-- [ ] Add role-based authorization annotations:
+- [✓] Add role-based authorization annotations:
   - Add `@PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")` to `addProduct()` in `ProductController`
   - Add `@PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")` to `updateProduct()` in `ProductController`
   - Add `@PreAuthorize("hasRole('ADMIN')")` to `deleteProduct()` in `ProductController`
   - Add `@Configuration` and `@EnableMethodSecurity` to enable method-level security
 
-- [ ] Insert default roles in `data.sql`:
-  ```sql
-  INSERT INTO role (name) VALUES ('ROLE_USER');
-  INSERT INTO role (name) VALUES ('ROLE_ADMIN');
-  INSERT INTO role (name) VALUES ('ROLE_SELLER');
-  ```
+- [✓] Initialize default roles with DataInitializer:
+  - Initialize 'ROLE_USER'
+  - Initialize 'ROLE_ADMIN'
+  - Initialize 'ROLE_SELLER'
 
 ### Dependencies to add in `pom.xml`:
 - `spring-boot-starter-security`

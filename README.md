@@ -49,9 +49,10 @@ This is a modern e-commerce platform that provides a seamless shopping experienc
 
 ## Team Members
 
-1. Rasika Deshan Alwis Kumara
-   - Student ID: IM/2020/108
-   - Role: Project Lead & Full-stack Developer
+1.RAD Kumara 34725
+ RARJ Ranasinghe 35098
+ hcsdilruk 35408
+ Adikari A M D  35341
 
 ## Setup and Installation
 
