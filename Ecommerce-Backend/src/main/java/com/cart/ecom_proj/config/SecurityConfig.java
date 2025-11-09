@@ -62,7 +62,7 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/logout") // Disable CSRF for auth endpoints
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                         .maximumSessions(1)
                 )
                 .authorizeHttpRequests(auth -> auth
