@@ -36,10 +36,45 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Redirect to login if unauthorized
-      window.location.href = "/login";
+    const { response } = error;
+    let message = 'An unexpected error occurred';
+
+    if (response) {
+      switch (response.status) {
+        case 400:
+          message = response.data?.message || 'Bad Request';
+          break;
+        case 401:
+          message = 'Please log in to continue';
+          window.location.href = "/login";
+          break;
+        case 403:
+          message = 'Access Denied';
+          break;
+        case 404:
+          message = 'Resource Not Found';
+          break;
+        case 413:
+          message = 'File size is too large';
+          break;
+        case 500:
+          message = 'Server Error - Please try again later';
+          break;
+        default:
+          message = response.data?.message || 'Something went wrong';
+      }
     }
+
+    // Create a custom error event
+    const errorEvent = new CustomEvent('api-error', { 
+      detail: { 
+        message,
+        status: response?.status,
+        validationErrors: response?.data?.validationErrors 
+      } 
+    });
+    window.dispatchEvent(errorEvent);
+
     return Promise.reject(error);
   }
 );
