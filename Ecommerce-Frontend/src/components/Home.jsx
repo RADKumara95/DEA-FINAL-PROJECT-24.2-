@@ -34,8 +34,19 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch 
 
   // Main effect to fetch products
   useEffect(() => {
+    // Reset to page 0 when filters change
+    if (currentPage !== 0) {
+      setCurrentPage(0);
+      updateURLParams({ page: "0" });
+    } else {
+      fetchProducts();
+    }
+  }, [selectedCategory, searchKeyword]);
+
+  // Fetch products when pagination changes
+  useEffect(() => {
     fetchProducts();
-  }, [currentPage, pageSize, sortBy, sortDir, selectedCategory, searchKeyword]);
+  }, [currentPage, pageSize, sortBy, sortDir]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -54,16 +65,20 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch 
       if (selectedCategory) {
         url = "/products/filter";
         params.append("category", selectedCategory);
+        console.log("🔍 Category filter applied:", selectedCategory);
       }
       
       // Add search keyword if provided
       if (searchKeyword && searchKeyword.trim()) {
         url = "/products/search";
         params.append("keyword", searchKeyword.trim());
+        console.log("🔍 Search keyword applied:", searchKeyword.trim());
       }
 
-      const response = await API.get(`${url}?${params.toString()}`);
-      console.log("API Response:", response.data);
+      const fullUrl = `${url}?${params.toString()}`;
+      console.log("🔍 Fetching products from:", fullUrl);
+      const response = await API.get(fullUrl);
+      console.log("🔍 API Response:", response.data);
       
       // Handle paginated response
       if (response.data.content) {

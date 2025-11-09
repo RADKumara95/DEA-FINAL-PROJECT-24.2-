@@ -266,6 +266,9 @@ import API from "../axios";
 
 const Cart = () => {
   const { cart, removeFromCart, clearCart } = useContext(AppContext);
+  console.log("🛒 Cart component - cart from context:", cart);
+  console.log("🛒 Cart component - localStorage cart:", localStorage.getItem('cart'));
+  
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);

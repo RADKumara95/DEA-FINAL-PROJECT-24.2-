@@ -34,7 +34,9 @@ export const AppProvider = ({ children }) => {
   
   // State for shopping cart - initialized from localStorage or empty array
   // This allows cart persistence across browser sessions and page refreshes
-  const [cart, setCart] = useState(JSON.parse(localStorage.getItem('cart')) || []);
+  const initialCart = JSON.parse(localStorage.getItem('cart')) || [];
+  console.log("🛒 Context initialized with cart from localStorage:", initialCart);
+  const [cart, setCart] = useState(initialCart);
 
   /**
    * Adds a product to the shopping cart or increments quantity if already present.
@@ -48,6 +50,9 @@ export const AppProvider = ({ children }) => {
    * @param {Object} ...otherProps - Other product properties
    */
   const addToCart = (product) => {
+    console.log("🛒 addToCart called with product:", product);
+    console.log("🛒 Current cart before adding:", cart);
+    
     // Check if product already exists in cart by ID
     const existingProductIndex = cart.findIndex((item) => item.id === product.id);
     
@@ -58,14 +63,18 @@ export const AppProvider = ({ children }) => {
           ? { ...item, quantity: item.quantity + 1 } // Increment existing quantity
           : item // Keep other items unchanged
       );
+      console.log("🛒 Product exists, updated cart:", updatedCart);
       setCart(updatedCart);
       localStorage.setItem('cart', JSON.stringify(updatedCart)); // Persist to localStorage
     } else {
       // Product doesn't exist: add new item with quantity 1
       const updatedCart = [...cart, { ...product, quantity: 1 }];
+      console.log("🛒 New product added, updated cart:", updatedCart);
       setCart(updatedCart);
       localStorage.setItem('cart', JSON.stringify(updatedCart)); // Persist to localStorage
     }
+    
+    console.log("🛒 localStorage after update:", localStorage.getItem('cart'));
   };
 
   /**

@@ -1,5 +1,6 @@
 package com.cart.ecom_proj.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -86,6 +87,7 @@ public class Product implements SoftDeletable {
     private LocalDateTime deletedAt;
     private String deletedBy;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
