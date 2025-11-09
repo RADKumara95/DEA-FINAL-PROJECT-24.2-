@@ -24,10 +24,21 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 function App() {
   const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
     console.log("Selected category:", category);
+  };
+
+  const handleClearCategory = () => {
+    setSelectedCategory("");
+    console.log("Category filter cleared");
+  };
+
+  const handleSearch = (keyword) => {
+    setSearchKeyword(keyword);
+    console.log("Search keyword:", keyword);
   };
 
   const addToCart = (product) => {
@@ -50,12 +61,21 @@ function App() {
       <AppProvider>
         <OrderProvider>
           <BrowserRouter>
-          <Navbar onSelectCategory={handleCategorySelect} />
+           <Navbar 
+             onSelectCategory={handleCategorySelect} 
+             selectedCategory={selectedCategory}
+             onSearch={handleSearch}
+           />
           <Routes>
             <Route
               path="/"
               element={
-                <Home addToCart={addToCart} selectedCategory={selectedCategory} />
+                <Home 
+                  addToCart={addToCart} 
+                  selectedCategory={selectedCategory}
+                  onClearCategory={handleClearCategory}
+                  searchKeyword={searchKeyword}
+                />
               }
             />
             <Route path="/login" element={<Login />} />

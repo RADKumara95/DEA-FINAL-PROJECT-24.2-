@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import API from "../axios";
 
-const Navbar = ({ onSelectCategory, onSearch }) => {
+const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategoryProp }) => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const getInitialTheme = () => {
@@ -149,11 +149,22 @@ const Navbar = ({ onSelectCategory, onSearch }) => {
                   </a>
 
                   <ul className="dropdown-menu">
+                    <li>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => handleCategorySelect("")}
+                        style={{ fontWeight: selectedCategoryProp === "" ? "bold" : "normal" }}
+                      >
+                        All Categories
+                      </button>
+                    </li>
+                    <li><hr className="dropdown-divider" /></li>
                     {categories.map((category) => (
                       <li key={category}>
                         <button
                           className="dropdown-item"
                           onClick={() => handleCategorySelect(category)}
+                          style={{ fontWeight: selectedCategoryProp === category ? "bold" : "normal" }}
                         >
                           {category}
                         </button>

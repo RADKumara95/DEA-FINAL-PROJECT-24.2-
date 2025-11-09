@@ -6,7 +6,7 @@ import AppContext from "../Context/Context";
 import Pagination from "./Pagination";
 import unplugged from "../assets/unplugged.png"
 
-const Home = ({ selectedCategory }) => {
+const Home = ({ selectedCategory, onClearCategory, searchKeyword }) => {
   const { addToCart } = useContext(AppContext);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,13 +34,23 @@ const Home = ({ selectedCategory }) => {
 
   useEffect(() => {
     fetchProducts();
-  }, [currentPage, pageSize, sortBy, sortDir, selectedCategory]);
+  }, [currentPage, pageSize, sortBy, sortDir, selectedCategory, searchKeyword]);
 
   const fetchProducts = async () => {
     setLoading(true);
     setError("");
     try {
       let url = `/products?page=${currentPage}&size=${pageSize}&sortBy=${sortBy}&sortDir=${sortDir}`;
+      
+      // Add category filter if selected
+      if (selectedCategory) {
+        url += `&category=${encodeURIComponent(selectedCategory)}`;
+      }
+      
+      // Add search keyword filter if provided
+      if (searchKeyword && searchKeyword.trim()) {
+        url += `&keyword=${encodeURIComponent(searchKeyword.trim())}`;
+      }
       
       const response = await API.get(url);
       
@@ -52,14 +62,26 @@ const Home = ({ selectedCategory }) => {
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);
       } else if (Array.isArray(response.data)) {
-        // Non-paginated response (fallback)
-        const updatedProducts = await fetchProductImages(response.data);
-        const filtered = selectedCategory
-          ? updatedProducts.filter((p) => p.category === selectedCategory)
-          : updatedProducts;
-        setProducts(filtered);
+        // Non-paginated response (fallback) - apply client-side filtering if needed
+        let filteredData = response.data;
+        
+        if (selectedCategory) {
+          filteredData = filteredData.filter((p) => p.category === selectedCategory);
+        }
+        
+        if (searchKeyword && searchKeyword.trim()) {
+          const keyword = searchKeyword.trim().toLowerCase();
+          filteredData = filteredData.filter((p) => 
+            p.name.toLowerCase().includes(keyword) || 
+            p.brand.toLowerCase().includes(keyword) ||
+            p.description?.toLowerCase().includes(keyword)
+          );
+        }
+        
+        const updatedProducts = await fetchProductImages(filteredData);
+        setProducts(updatedProducts);
         setTotalPages(1);
-        setTotalElements(filtered.length);
+        setTotalElements(updatedProducts.length);
       }
     } catch (err) {
       console.error("Error fetching products:", err);
@@ -113,10 +135,6 @@ const Home = ({ selectedCategory }) => {
     });
     setSearchParams(newSearchParams);
   };
-
-  const filteredProducts = selectedCategory
-    ? products.filter((product) => product.category === selectedCategory)
-    : products;
 
   if (loading) {
     return (
@@ -185,7 +203,38 @@ const Home = ({ selectedCategory }) => {
 
         <div className="mb-3">
           <p className="text-muted">
-            Showing {filteredProducts.length} of {totalElements} products
+            {(selectedCategory || searchKeyword) && (
+              <div className="mb-2">
+                {selectedCategory && (
+                  <span className="badge bg-primary me-2">
+                    Category: {selectedCategory}
+                    <button 
+                      className="btn-close btn-close-white ms-2" 
+                      style={{ fontSize: "0.7rem" }}
+                      onClick={() => {
+                        onClearCategory && onClearCategory();
+                      }}
+                      aria-label="Clear category filter"
+                    ></button>
+                  </span>
+                )}
+                {searchKeyword && (
+                  <span className="badge bg-info me-2">
+                    Search: "{searchKeyword}"
+                    <button 
+                      className="btn-close btn-close-white ms-2" 
+                      style={{ fontSize: "0.7rem" }}
+                      onClick={() => {
+                        // Clear search - this will need to be passed from App component
+                        window.location.href = "/";
+                      }}
+                      aria-label="Clear search"
+                    ></button>
+                  </span>
+                )}
+              </div>
+            )}
+            Showing {products.length} of {totalElements} products
             {currentPage > 0 && ` (Page ${currentPage + 1} of ${totalPages})`}
           </p>
         </div>
@@ -200,7 +249,7 @@ const Home = ({ selectedCategory }) => {
             padding: "0",
           }}
         >
-          {filteredProducts.length === 0 ? (
+          {products.length === 0 ? (
             <h2
               className="text-center"
               style={{
@@ -210,10 +259,12 @@ const Home = ({ selectedCategory }) => {
                 alignItems: "center",
               }}
             >
-              No Products Available
+              {selectedCategory 
+                ? `No Products Available in "${selectedCategory}" Category` 
+                : "No Products Available"}
             </h2>
           ) : (
-            filteredProducts.map((product) => {
+            products.map((product) => {
             const { id, brand, name, price, productAvailable, imageUrl } =
               product;
             const cardStyle = {
