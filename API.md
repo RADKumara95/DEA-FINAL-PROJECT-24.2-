@@ -1,5 +1,93 @@
 # E-commerce Platform API Documentation
 
+## Quick Access to API Documentation
+
+### 🔍 Swagger UI (Interactive API Documentation)
+
+The easiest way to explore and test the API is through the **Swagger UI** - an interactive web interface that allows you to test endpoints directly from your browser.
+
+**Access Swagger UI:**
+```
+http://localhost:8080/swagger-ui.html
+```
+
+**Features:**
+- View all available endpoints organized by resource type
+- See request/response schemas for each endpoint
+- Test endpoints directly with the "Try it out" button
+- View parameter documentation and validation rules
+- See HTTP status codes and error responses
+- Download OpenAPI JSON specification
+
+**Steps to Use Swagger:**
+1. Start the backend application (`./mvnw spring-boot:run` or `./gradlew bootRun`)
+2. Open your browser and navigate to `http://localhost:8080/swagger-ui.html`
+3. You'll see all API endpoints grouped by controller
+4. Click on an endpoint to expand its details
+5. Click "Try it out" to test the endpoint
+6. Fill in required parameters and execute the request
+7. View the response in the "Response" section
+
+### 📮 Postman Collection
+
+For more advanced testing and automation, use the **Postman Collection** included in the project.
+
+**Location:** `/Ecommerce-Backend/Postman_Collection.json`
+
+**How to Import into Postman:**
+
+1. **Download Postman** (if not already installed)
+   - Visit: https://www.postman.com/downloads/
+   - Choose your OS and install
+
+2. **Import the Collection**
+   - Open Postman
+   - Click **Import** button (top left)
+   - Choose **File** tab
+   - Navigate to `Ecommerce-Backend/Postman_Collection.json`
+   - Select and click **Import**
+
+3. **Configure Base URL**
+   - In Postman, locate the **Variables** section in the imported collection
+   - Set `baseUrl` to `http://localhost:8080`
+   - Save changes
+
+4. **Authenticate (if needed)**
+   - Login first using the "Login User" request in the Authentication folder
+   - Postman will store session cookies automatically
+   - Use authenticated requests to test protected endpoints
+
+**Collection Structure:**
+- **Authentication**: Register, Login, Logout, Get Current User, Update Profile
+- **Products**: CRUD operations, Search, Advanced Search, Filter, Image handling
+- **Orders**: Create, View, Cancel, Admin operations (status update, delete)
+
+**Advantages of Postman:**
+- Test entire workflows sequentially
+- Store multiple requests organized in folders
+- Save request/response examples
+- Create automated test suites
+- Generate code snippets in multiple languages
+- Share collections with team members
+- Monitor API performance with built-in tools
+
+### 📖 OpenAPI/Swagger Specification
+
+Access the raw OpenAPI specification in JSON format:
+
+```
+http://localhost:8080/api-docs
+```
+
+**Uses:**
+- Generate API documentation automatically
+- Generate client SDKs
+- Validate API requests/responses
+- Create API documentation portals
+- Integrate with third-party tools
+
+---
+
 ## Table of Contents
 - [Overview](#overview)
 - [Base URL](#base-url)
