@@ -9,21 +9,25 @@
 - [Authentication Endpoints](#authentication-endpoints)
 - [Product Endpoints](#product-endpoints)
 - [Order Endpoints](#order-endpoints)
+- [User Management Endpoints](#user-management-endpoints)
+- [Admin Endpoints](#admin-endpoints)
 - [Data Models](#data-models)
 - [Status Codes](#status-codes)
 - [Examples](#examples)
 
 ## Overview
 
-This API provides endpoints for managing an e-commerce platform with user authentication, product management, and order processing capabilities. The API follows RESTful principles and uses JSON for data exchange.
+This API provides endpoints for managing an e-commerce platform with user authentication, product management, order processing, and user management capabilities. The API follows RESTful principles and uses JSON for data exchange.
 
 ### API Features
 - **User Authentication**: Registration, login, logout, and profile management
 - **Product Management**: CRUD operations, search, filtering, and image handling
 - **Order Management**: Order creation, tracking, and status updates
+- **User Management**: User profile updates, account management
 - **Role-based Access Control**: Admin, Seller, and Customer roles
 - **Pagination**: Support for paginated responses
 - **File Upload**: Product image upload and retrieval
+- **Comprehensive Documentation**: Swagger/OpenAPI integration
 
 ## Base URL
 
@@ -44,7 +48,7 @@ Accept: application/json
 ### CORS Configuration
 - **Allowed Origins**: `http://localhost:5173`
 - **Credentials**: Supported
-- **Methods**: GET, POST, PUT, DELETE
+- **Methods**: GET, POST, PUT, DELETE, OPTIONS
 
 ## Response Format
 
@@ -94,6 +98,7 @@ Accept: application/json
 | 403 | Forbidden - Insufficient permissions |
 | 404 | Not Found - Resource not found |
 | 409 | Conflict - Duplicate resource |
+| 422 | Unprocessable Entity - Validation error |
 | 500 | Internal Server Error - Server error |
 
 ---
@@ -578,12 +583,63 @@ Cancel an existing order.
 
 **Response:** Updated order object with CANCELLED status
 
+**Error Response:**
+- `404 Not Found` - Order not found
+- `400 Bad Request` - Cannot cancel order (already shipped/delivered)
+
 ---
 
-### Get All Orders (Admin)
-Retrieve all orders in the system (admin/seller only).
+## User Management Endpoints
 
-**Endpoint:** `GET /api/orders/admin/all`
+### Get User Profile
+Get detailed user profile information.
+
+**Endpoint:** `GET /api/users/profile`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "username": "johndoe",
+  "email": "john@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "phoneNumber": "+1234567890",
+  "roles": ["CUSTOMER"],
+  "createdDate": "2024-01-01T12:00:00"
+}
+```
+
+---
+
+### Update User Profile
+Update user profile information.
+
+**Endpoint:** `PUT /api/users/profile`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "phoneNumber": "+1234567890"
+}
+```
+
+**Response:** `200 OK` - Updated user object
+
+---
+
+## Admin Endpoints
+
+### Get All Orders (Admin)
+Retrieve all orders in the system.
+
+**Endpoint:** `GET /api/admin/orders`
 
 **Authentication:** Required (ADMIN or SELLER role)
 
@@ -592,14 +648,14 @@ Retrieve all orders in the system (admin/seller only).
 - `size` (optional): Page size (default: 10)
 - `status` (optional): Filter by order status
 
-**Response:** Paginated list of all orders
+**Response:** `200 OK` - Paginated list of all orders
 
 ---
 
 ### Update Order Status (Admin)
-Update the status of an order (admin/seller only).
+Update the status of an order.
 
-**Endpoint:** `PUT /api/orders/admin/{id}/status`
+**Endpoint:** `PUT /api/admin/orders/{id}/status`
 
 **Authentication:** Required (ADMIN or SELLER role)
 
@@ -614,21 +670,25 @@ Update the status of an order (admin/seller only).
 }
 ```
 
-**Response:** Updated order object
+**Response:** `200 OK` - Updated order object
+
+**Validation Rules:**
+- status: Must be valid OrderStatus enum value
+- Allowed statuses: PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
 
 ---
 
 ### Delete Order (Admin)
-Delete an order from the system (admin only).
+Delete an order from the system.
 
-**Endpoint:** `DELETE /api/orders/admin/{id}`
+**Endpoint:** `DELETE /api/admin/orders/{id}`
 
 **Authentication:** Required (ADMIN role)
 
 **Path Parameters:**
 - `id`: Order ID
 
-**Response:**
+**Response:** `200 OK`
 ```json
 {
   "message": "Order deleted successfully"
@@ -735,11 +795,13 @@ Delete an order from the system (admin only).
 |------|-------------|-------|
 | 200 | OK | Successful GET, PUT requests |
 | 201 | Created | Successful POST requests |
+| 204 | No Content | Successful DELETE requests |
 | 400 | Bad Request | Invalid input data, validation errors |
 | 401 | Unauthorized | Authentication required or failed |
 | 403 | Forbidden | Insufficient permissions |
 | 404 | Not Found | Resource not found |
 | 409 | Conflict | Duplicate resource (username, email) |
+| 422 | Unprocessable Entity | Validation error with details |
 | 500 | Internal Server Error | Server-side errors |
 
 ## Examples
@@ -818,6 +880,17 @@ curl -X GET "http://localhost:8080/api/products/advanced-search?keyword=laptop&c
   -b cookies.txt
 ```
 
+3. **Update order status (Admin):**
+```bash
+curl -X PUT http://localhost:8080/api/admin/orders/1/status \
+  -H "Content-Type: application/json" \
+  -b cookies.txt \
+  -d '{
+    "status": "SHIPPED",
+    "deliveryDate": "2024-01-05T14:00:00"
+  }'
+```
+
 ---
 
 ## Rate Limiting
@@ -846,6 +919,19 @@ All list endpoints support pagination with the following parameters:
 - Input validation on all endpoints
 - CORS configured for frontend integration
 - Session-based authentication with secure cookies
+- CSRF protection enabled
+- Password hashing with BCrypt
+
+## Development Notes
+
+- **Base URL**: `http://localhost:8080/api`
+- **Frontend CORS**: `http://localhost:5173`
+- **Database**: MySQL with JPA/Hibernate (H2 for development)
+- **Framework**: Spring Boot 3.x with Spring Security
+- **File Upload**: Multipart form data support
+- **Build Tools**: Maven or Gradle
+
+For more information about setup and installation, see the [README.md](./README.md).
 
 ## Development Notes
 
