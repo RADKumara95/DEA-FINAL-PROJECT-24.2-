@@ -4,6 +4,7 @@ import { useState } from "react";
 import AppContext from "../Context/Context";
 import axios from "../axios";
 import UpdateProduct from "./UpdateProduct";
+
 const Product = () => {
   const { id } = useParams();
   const { data, addToCart, removeFromCart, cart, refreshData } =
@@ -59,120 +60,149 @@ const Product = () => {
     addToCart(product);
     alert("Product added to cart!");
   };
+
   if (!product) {
     return (
-      <h2 className="text-center" style={{ padding: "10rem" }}>
-        Loading...
-      </h2>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+          <h2 className="mt-4 text-2xl font-semibold text-gray-900">Loading...</h2>
+          <p className="text-gray-600">Getting product details...</p>
+        </div>
+      </div>
     );
   }
+
   return (
-    <>
-      <div className="containers" style={{ display: "flex", flexWrap: "wrap" }}>
-        <div className="left-column">
-          <img
-            className="left-column-img"
-            src={imageUrl}
-            alt={product.imageName}
-          />
-        </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate("/")}
+          className="mb-6 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Products
+        </button>
 
-        <div className="right-column">
-          <div className="product-description">
-            <div style={{display:'flex',justifyContent:'space-between' }}>
-            <span style={{ fontSize: "1.2rem", fontWeight: 'lighter' }}>
-              {product.category}
-            </span>
-            <p className="release-date" style={{ marginBottom: "2rem" }}>
-              
-              <h6>Listed : <span> <i> {new Date(product.releaseDate).toLocaleDateString()}</i></span></h6>
-              {/* <i> {new Date(product.releaseDate).toLocaleDateString()}</i> */}
-            </p>
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+            {/* Image Section */}
+            <div className="aspect-w-1 aspect-h-1 bg-gray-100 overflow-hidden lg:aspect-w-3 lg:aspect-h-4">
+              <img
+                className="w-full h-full object-cover object-center transition-transform duration-300 hover:scale-105"
+                src={imageUrl}
+                alt={product.imageName}
+              />
             </div>
-            
-           
-            <h1 style={{ fontSize: "2rem", marginBottom: "0.5rem",textTransform: 'capitalize', letterSpacing:'1px' }}>
-              {product.name}
-            </h1>
-            <i style={{ marginBottom: "3rem" }}>{product.brand}</i>
-            <p style={{fontWeight:'bold',fontSize:'1rem',margin:'10px 0px 0px'}}>PRODUCT DESCRIPTION :</p>
-            <p style={{ marginBottom: "1rem" }}>{product.description}</p>
-          </div>
 
-          <div className="product-price">
-            <span style={{ fontSize: "2rem", fontWeight: "bold" }}>
-              {"$" + product.price}
-            </span>
-            <button
-              className={`cart-btn ${
-                !product.productAvailable ? "disabled-btn" : ""
-              }`}
-              onClick={handlAddToCart}
-              disabled={!product.productAvailable}
-              style={{
-                padding: "0.75rem 2rem",
-                fontSize: "1rem",
-                backgroundColor: product.productAvailable ? "#007bff" : "#ccc",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: product.productAvailable ? "pointer" : "not-allowed",
-                marginBottom: "1rem",
-                transition: "background-color 0.3s ease",
-              }}
-            >
-              {product.productAvailable ? "Add to cart" : "Out of Stock"}
-            </button>
-            <h6 style={{ marginBottom: "1rem" }}>
-              Stock Available :{" "}
-              <i style={{ color: "green", fontWeight: "bold" }}>
-                {product.stockQuantity}
-              </i>
-            </h6>
-          
-          </div>
-          <div className="update-button" style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={handleEditClick}
-              style={{
-                flex: "1",
-                minWidth: "120px",
-                padding: "0.75rem 1.5rem",
-                fontSize: "1rem",
-                backgroundColor: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-              }}
-            >
-              Update
-            </button>
-            {/* <UpdateProduct product={product} onUpdate={handleUpdate} /> */}
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={deleteProduct}
-              style={{
-                flex: "1",
-                minWidth: "120px",
-                padding: "0.75rem 1.5rem",
-                fontSize: "1rem",
-                backgroundColor: "#dc3545",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-              }}
-            >
-              Delete
-            </button>
+            {/* Product Details Section */}
+            <div className="p-8 lg:p-12 flex flex-col justify-between">
+              {/* Header Info */}
+              <div className="flex justify-between items-start mb-6">
+                <div className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                  {product.category}
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500 font-medium">Listed</p>
+                  <p className="text-sm text-gray-700 italic">
+                    {new Date(product.releaseDate).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Product Title and Brand */}
+              <div className="mb-8">
+                <h1 className="text-4xl font-bold text-gray-900 mb-2 capitalize tracking-wide">
+                  {product.name}
+                </h1>
+                <p className="text-lg text-gray-600 italic font-medium">
+                  {product.brand}
+                </p>
+              </div>
+
+              {/* Description */}
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-900 mb-3 uppercase tracking-wide">
+                  Product Description
+                </h3>
+                <p className="text-gray-700 leading-relaxed text-base">
+                  {product.description}
+                </p>
+              </div>
+
+              {/* Price and Add to Cart */}
+              <div className="border-t border-gray-200 pt-8">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-4xl font-bold text-gray-900">
+                    ${product.price}
+                  </span>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-500 font-medium">Stock Available</p>
+                    <p className="text-lg font-bold text-green-600">
+                      {product.stockQuantity} units
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handlAddToCart}
+                  disabled={!product.productAvailable}
+                  className={`w-full py-4 px-6 rounded-xl text-lg font-semibold transition-all duration-200 transform hover:scale-[1.02] ${
+                    product.productAvailable
+                      ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl"
+                      : "bg-gray-400 text-gray-600 cursor-not-allowed"
+                  }`}
+                >
+                  <span className="flex items-center justify-center">
+                    {product.productAvailable ? (
+                      <>
+                        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m1.5 6h10m-10 0v6a1 1 0 001 1h8a1 1 0 001-1v-6" />
+                        </svg>
+                        Add to Cart
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Out of Stock
+                      </>
+                    )}
+                  </span>
+                </button>
+
+                {/* Admin Actions */}
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button
+                    onClick={handleEditClick}
+                    className="flex items-center justify-center py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Update Product
+                  </button>
+
+                  <button
+                    onClick={deleteProduct}
+                    className="flex items-center justify-center py-3 px-6 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Product
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

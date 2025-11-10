@@ -149,7 +149,7 @@ textarea::placeholder {
 }
 
 main {
-    padding: var(--spacing-lg) var(--spacing-md);
+    padding: calc(var(--spacing-xl) + 3rem) var(--spacing-md) var(--spacing-xl);
 }
 
 .app-navbar {
@@ -265,6 +265,10 @@ main {
 
 .card-shell img {
     border-radius: calc(var(--radius-lg) - 0.4rem);
+}
+
+.min-h-104 {
+    min-height: 26rem;
 }
 
 .badge-soft {

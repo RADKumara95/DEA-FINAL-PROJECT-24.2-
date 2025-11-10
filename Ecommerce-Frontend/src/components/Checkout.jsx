@@ -176,26 +176,60 @@ const Checkout = () => {
   );
 
   return (
-    <div className="container mt-5 mb-5">
-      <h2 className="mb-4">Checkout</h2>
-      {errors.general && (
-        <div className="alert alert-danger" role="alert">
-          {errors.general}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate("/cart")}
+          className="mb-6 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Cart
+        </button>
+
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Checkout</h1>
+          <p className="text-gray-600">Complete your order information to proceed</p>
         </div>
-      )}
-      <div className="row">
-        <div className="col-md-8">
-          <div className="card">
-            <div className="card-body">
-              <h4 className="card-title mb-4">Shipping & Payment Information</h4>
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="shippingAddress" className="form-label">
-                    Shipping Address <span className="text-danger">*</span>
+
+        {/* General Error */}
+        {errors.general && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <span className="text-red-700 text-sm font-medium">{errors.general}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Form Section */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                <svg className="w-7 h-7 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Shipping & Payment Information
+              </h2>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Shipping Address */}
+                <div>
+                  <label htmlFor="shippingAddress" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Shipping Address <span className="text-red-500">*</span>
                   </label>
                   <textarea
-                    className={`form-control ${
-                      errors.shippingAddress ? "is-invalid" : ""
+                    className={`w-full px-4 py-3 border rounded-xl transition-all duration-200 placeholder-gray-400 text-gray-900 resize-none ${
+                      errors.shippingAddress 
+                        ? 'border-red-300 focus:ring-2 focus:ring-red-500 focus:border-transparent bg-red-50' 
+                        : 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     }`}
                     id="shippingAddress"
                     name="shippingAddress"
@@ -206,20 +240,26 @@ const Checkout = () => {
                     required
                   />
                   {errors.shippingAddress && (
-                    <div className="invalid-feedback">
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
                       {errors.shippingAddress}
-                    </div>
+                    </p>
                   )}
                 </div>
 
-                <div className="mb-3">
-                  <label htmlFor="billingAddress" className="form-label">
+                {/* Billing Address */}
+                <div>
+                  <label htmlFor="billingAddress" className="block text-sm font-semibold text-gray-700 mb-2">
                     Billing Address
-                    <small className="text-muted"> (Leave blank to use shipping address)</small>
+                    <span className="text-gray-500 font-normal ml-2">(Leave blank to use shipping address)</span>
                   </label>
                   <textarea
-                    className={`form-control ${
-                      errors.billingAddress ? "is-invalid" : ""
+                    className={`w-full px-4 py-3 border rounded-xl transition-all duration-200 placeholder-gray-400 text-gray-900 resize-none ${
+                      errors.billingAddress 
+                        ? 'border-red-300 focus:ring-2 focus:ring-red-500 focus:border-transparent bg-red-50' 
+                        : 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     }`}
                     id="billingAddress"
                     name="billingAddress"
@@ -229,20 +269,26 @@ const Checkout = () => {
                     placeholder="Enter your billing address (optional)"
                   />
                   {errors.billingAddress && (
-                    <div className="invalid-feedback">
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
                       {errors.billingAddress}
-                    </div>
+                    </p>
                   )}
                 </div>
 
-                <div className="mb-3">
-                  <label htmlFor="phoneNumber" className="form-label">
-                    Phone Number <span className="text-danger">*</span>
+                {/* Phone Number */}
+                <div>
+                  <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone Number <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
-                    className={`form-control ${
-                      errors.phoneNumber ? "is-invalid" : ""
+                    className={`w-full px-4 py-3 border rounded-xl transition-all duration-200 placeholder-gray-400 text-gray-900 ${
+                      errors.phoneNumber 
+                        ? 'border-red-300 focus:ring-2 focus:ring-red-500 focus:border-transparent bg-red-50' 
+                        : 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     }`}
                     id="phoneNumber"
                     name="phoneNumber"
@@ -252,20 +298,28 @@ const Checkout = () => {
                     required
                   />
                   {errors.phoneNumber && (
-                    <div className="invalid-feedback">{errors.phoneNumber}</div>
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {errors.phoneNumber}
+                    </p>
                   )}
-                  <small className="form-text text-muted">
+                  <p className="mt-1 text-xs text-gray-500">
                     Enter a valid phone number (10-15 digits)
-                  </small>
+                  </p>
                 </div>
 
-                <div className="mb-3">
-                  <label htmlFor="paymentMethod" className="form-label">
-                    Payment Method <span className="text-danger">*</span>
+                {/* Payment Method */}
+                <div>
+                  <label htmlFor="paymentMethod" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Payment Method <span className="text-red-500">*</span>
                   </label>
                   <select
-                    className={`form-select ${
-                      errors.paymentMethod ? "is-invalid" : ""
+                    className={`w-full px-4 py-3 border rounded-xl transition-all duration-200 text-gray-900 ${
+                      errors.paymentMethod 
+                        ? 'border-red-300 focus:ring-2 focus:ring-red-500 focus:border-transparent bg-red-50' 
+                        : 'border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     }`}
                     id="paymentMethod"
                     name="paymentMethod"
@@ -280,18 +334,23 @@ const Checkout = () => {
                     <option value="NET_BANKING">Net Banking</option>
                   </select>
                   {errors.paymentMethod && (
-                    <div className="invalid-feedback">
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
                       {errors.paymentMethod}
-                    </div>
+                    </p>
                   )}
                 </div>
 
-                <div className="mb-3">
-                  <label htmlFor="notes" className="form-label">
-                    Order Notes <small className="text-muted">(Optional)</small>
+                {/* Order Notes */}
+                <div>
+                  <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Order Notes 
+                    <span className="text-gray-500 font-normal ml-2">(Optional)</span>
                   </label>
                   <textarea
-                    className="form-control"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400 text-gray-900 resize-none"
                     id="notes"
                     name="notes"
                     rows="3"
@@ -301,95 +360,97 @@ const Checkout = () => {
                   />
                 </div>
 
+                {/* Submit Button */}
                 <button
                   type="submit"
-                  className="btn btn-primary btn-lg w-100"
                   disabled={loading || cart.length === 0}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-md text-lg"
                 >
-                  {loading ? (
-                    <>
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
-                      Placing Order...
-                    </>
-                  ) : (
-                    "Place Order"
-                  )}
+                  <span className="flex items-center justify-center">
+                    {loading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                        Placing Order...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                        Place Order
+                      </>
+                    )}
+                  </span>
                 </button>
               </form>
             </div>
           </div>
-        </div>
 
-        <div className="col-md-4">
-          <div className="card sticky-top" style={{ top: "20px" }}>
-            <div className="card-body">
-              <h5 className="card-title mb-4">Order Summary</h5>
+          {/* Order Summary */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <svg className="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                Order Summary
+              </h3>
+
               {cartItems.length === 0 && cart.length > 0 ? (
-                <div className="text-muted">Loading cart items...</div>
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                    <p className="text-gray-500">Loading cart items...</p>
+                  </div>
+                </div>
               ) : (
                 <>
-                  <div className="mb-3" style={{ maxHeight: "400px", overflowY: "auto" }}>
+                  {/* Cart Items */}
+                  <div className="space-y-4 mb-6 max-h-80 overflow-y-auto">
                     {cartItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="d-flex align-items-center mb-3 pb-3 border-bottom"
-                      >
+                      <div key={item.id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
                         {item.imageUrl && (
                           <img
                             src={item.imageUrl}
                             alt={item.name}
-                            className="me-3"
-                            style={{
-                              width: "60px",
-                              height: "60px",
-                              objectFit: "cover",
-                              borderRadius: "4px",
-                            }}
+                            className="w-12 h-12 object-cover rounded-lg shadow-sm"
                           />
                         )}
-                        <div className="flex-grow-1">
-                          <div className="fw-semibold">{item.name}</div>
-                          <small className="text-muted">
-                            Quantity: {item.quantity}
-                          </small>
-                          <div className="mt-1">
-                            <strong>
-                              $
-                              {(
-                                parseFloat(item.price || 0) *
-                                (item.quantity || 0)
-                              ).toFixed(2)}
-                            </strong>
-                          </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 text-sm truncate">{item.name}</p>
+                          <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                          <p className="text-sm font-bold text-blue-600">
+                            ${(parseFloat(item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                          </p>
                         </div>
                       </div>
                     ))}
                   </div>
-                  <hr />
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="text-muted">Subtotal:</span>
-                    <span>${totalAmount.toFixed(2)}</span>
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="text-muted">Shipping:</span>
-                    <span className="text-success">Free</span>
-                  </div>
-                  <hr />
-                  <div className="d-flex justify-content-between align-items-center">
-                    <strong className="fs-5">Total:</strong>
-                    <strong className="fs-5 text-primary">
-                      ${totalAmount.toFixed(2)}
-                    </strong>
-                  </div>
-                  <div className="mt-3">
-                    <small className="text-muted">
-                      {cart.length} item{cart.length !== 1 ? "s" : ""} in your
-                      order
-                    </small>
+
+                  {/* Summary */}
+                  <div className="border-t border-gray-200 pt-4 space-y-3">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Subtotal:</span>
+                      <span>${totalAmount.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Shipping:</span>
+                      <span className="text-green-600 font-medium">Free</span>
+                    </div>
+                    <div className="border-t border-gray-200 pt-3">
+                      <div className="flex justify-between text-lg font-bold text-gray-900">
+                        <span>Total:</span>
+                        <span className="text-blue-600">${totalAmount.toFixed(2)}</span>
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <p className="text-xs text-gray-500 text-center">
+                        {cart.length} item{cart.length !== 1 ? "s" : ""} in your order
+                      </p>
+                    </div>
                   </div>
                 </>
               )}

@@ -169,7 +169,7 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch 
 
   return (
     <>
-      <div className="mt-20 p-5">
+  <div className="px-5 pb-10">
         {/* Filters and Sorting */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div className="flex items-center gap-3">
@@ -266,7 +266,7 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch 
               const { id, brand, name, price, productAvailable, imageUrl } = product;
               return (
                 <div
-                  className={`card-shell overflow-hidden flex flex-col h-96 transition-transform duration-300 ${
+                  className={`card-shell overflow-hidden flex flex-col min-h-104 transition-transform duration-300 ${
                     productAvailable
                       ? ''
                       : 'opacity-75 border-dashed'
@@ -284,7 +284,7 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch 
                         className="w-full h-44 object-cover p-2 rounded-xl transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
-                    <div className="flex-1 p-4 flex flex-col justify-between">
+                    <div className="flex-1 p-5 flex flex-col justify-between gap-4">
                       <div>
                         <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                           {name.toUpperCase()}
@@ -301,7 +301,7 @@ const Home = ({ selectedCategory, onClearCategory, searchKeyword, onClearSearch 
                       </div>
                     </div>
                   </Link>
-                  <div className="p-4 pt-0">
+                  <div className="px-5 pb-6">
                     <button
                       className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-300 ${
                         productAvailable

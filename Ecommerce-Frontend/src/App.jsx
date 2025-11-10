@@ -1,4 +1,4 @@
-import "./App.css";
+import "./index.css";
 import React, { useState } from "react";
 import Home from "./components/Home";
 import Navbar from "./components/Navbar";
@@ -18,8 +18,6 @@ import { AppProvider } from "./Context/Context";
 import { AuthProvider } from "./Context/AuthContext";
 import { OrderProvider } from "./Context/OrderContext";
 import UpdateProduct from "./components/UpdateProduct";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 function App() {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -55,6 +53,7 @@ function App() {
              selectedCategory={selectedCategory}
              onSearch={handleSearch}
            />
+          <main>
           <Routes>
             <Route
               path="/"
@@ -129,6 +128,7 @@ function App() {
               }
             />
           </Routes>
+          </main>
         </BrowserRouter>
         </OrderProvider>
       </AppProvider>

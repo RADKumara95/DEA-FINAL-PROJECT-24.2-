@@ -2,32 +2,55 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import API from "../axios";
+import { Menu, X } from 'lucide-react';
+import { cn } from "../lib/utils";
 
 const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategoryProp }) => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
-  const getInitialTheme = () => {
-    if (typeof window === "undefined") {
-      return "light";
-    }
-    const storedTheme = localStorage.getItem("theme");
-    if (storedTheme === "dark" || storedTheme === "light") {
-      return storedTheme;
-    }
-    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
-    return prefersDark ? "dark" : "light";
-  };
-  const [theme, setTheme] = useState(getInitialTheme);
+  
+  const [theme, setTheme] = useState(getInitialTheme());
   const [input, setInput] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [noResults, setNoResults] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuState, setMenuState] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  const categories = [
+    "Smartphones", "Laptops", "Audio", "Tablets",
+    "Accessories", "Wearables", "Monitors"
+  ];
+
+  function getInitialTheme() {
+    if (typeof window === "undefined") return "light";
+    const storedTheme = localStorage.getItem("theme");
+    if (storedTheme === "dark" || storedTheme === "light") return storedTheme;
+    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+    return prefersDark ? "dark" : "light";
+  }
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+    const root = document.documentElement;
+    root.classList.toggle("dark", theme === "dark");
+    document.body.dataset.theme = theme;
+  }, [theme]);
 
   const fetchData = async () => {
     try {
@@ -43,9 +66,7 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
     if (value.length >= 1) {
       setShowSearchResults(true);
       try {
-        const response = await API.get(
-          `/products/search?keyword=${value}`
-        );
+        const response = await API.get(`/products/search?keyword=${value}`);
         setSearchResults(response.data);
         setNoResults(response.data.length === 0);
       } catch (error) {
@@ -63,30 +84,23 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
     if (input.trim() && onSearch) {
       onSearch(input.trim());
       setShowSearchResults(false);
-      setIsMenuOpen(false);
-      // Navigate to home page if not already there
-      if (window.location.pathname !== "/") {
-        navigate("/");
-      }
+      setMenuState(false);
+      if (window.location.pathname !== "/") navigate("/");
     }
   };
 
   const handleSearchResultClick = (productId) => {
     setShowSearchResults(false);
     setInput("");
-    setIsMenuOpen(false);
+    setMenuState(false);
     navigate(`/product/${productId}`);
   };
 
   const handleCategorySelect = (category) => {
-    if (onSelectCategory) {
-      onSelectCategory(category);
-    }
-    
-    // Navigate to home page if not already there
-    if (window.location.pathname !== "/") {
-      navigate("/");
-    }
+    if (onSelectCategory) onSelectCategory(category);
+    if (window.location.pathname !== "/") navigate("/");
+    setMenuState(false);
+    setOpenDropdown(null);
   };
 
   const toggleTheme = () => {
@@ -96,301 +110,315 @@ const Navbar = ({ onSelectCategory, onSearch, selectedCategory: selectedCategory
   const handleLogout = async () => {
     await logout();
     navigate("/");
-    setIsMenuOpen(false);
+    setMenuState(false);
+    setUserDropdownOpen(false);
   };
 
   const isAdminOrSeller = user?.roles?.some(role => 
     role === "ROLE_ADMIN" || role === "ROLE_SELLER"
   );
 
-  useEffect(() => {
-    localStorage.setItem("theme", theme);
-    const root = document.documentElement;
-    root.classList.toggle("dark", theme === "dark");
-    document.body.dataset.theme = theme;
-  }, [theme]);
-
-  // Categories must match the actual categories in the database
-  const categories = [
-    "Smartphones",
-    "Laptops",
-    "Audio",
-    "Tablets",
-    "Accessories",
-    "Wearables",
-    "Monitors"
-  ];
-
   return (
-    <>
-      <header>
-        <nav className="app-navbar fixed top-0 left-0 w-full z-50 py-3 px-4">
-          <div className="container mx-auto flex flex-wrap items-center justify-between">
-            {/* Brand */}
-            <Link 
-              className="text-xl font-semibold tracking-tight text-current"
-              to="/"
-            >
-              HiTeckKart
-            </Link>
+    <header>
+      <nav
+        data-state={menuState && 'active'}
+        className={cn(
+          'fixed z-50 w-full border-b transition-colors duration-150',
+          scrolled && 'bg-background/50 backdrop-blur-3xl'
+        )}>
+        <div className="mx-auto max-w-7xl px-6 transition-all duration-300">
+          <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
+            
+            {/* Left Section - Logo and Desktop Menu */}
+            <div className="flex w-full items-center justify-between gap-12 lg:w-auto">
+              <Link
+                to="/"
+                className="text-xl font-semibold tracking-tight text-current flex items-center space-x-2">
+                SlateSupply
+              </Link>
 
-            {/* Mobile menu button */}
-            <button
-              className="lg:hidden icon-button"
-              type="button"
-              aria-controls="navbarContent"
-              aria-expanded={isMenuOpen}
-              aria-label="Toggle navigation"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMenuState(!menuState)}
+                aria-label={menuState ? 'Close Menu' : 'Open Menu'}
+                className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden">
+                <Menu className={cn(
+                  "m-auto size-6 duration-200 transition-all",
+                  menuState && "rotate-180 scale-0 opacity-0"
+                )} />
+                <X className={cn(
+                  "absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200 transition-all",
+                  menuState && "rotate-0 scale-100 opacity-100"
+                )} />
+              </button>
 
-            {/* Navigation content */}
-            <div
-              id="navbarContent"
-              className={`w-full lg:w-auto ${
-                isMenuOpen ? "mt-4 flex flex-col gap-4" : "hidden"
-              } lg:flex lg:flex-row lg:items-center lg:gap-0`}
-            >
-              {/* Left navigation */}
-              <ul className="flex flex-col lg:flex-row lg:items-center lg:space-x-2 mt-4 lg:mt-0 gap-1 lg:gap-0">
-                <li>
-                  <Link 
-                    className="nav-link"
-                    to="/"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Home
-                  </Link>
-                </li>
-                {isAuthenticated && isAdminOrSeller && (
+              {/* Desktop Navigation */}
+              <div className="hidden lg:block">
+                <ul className="flex gap-8 text-sm items-center">
                   <li>
-                    <Link 
-                      className="nav-link"
-                      to="/add_product"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Add Product
+                    <Link to="/" className="text-muted-foreground hover:text-accent-foreground duration-150">
+                      Home
                     </Link>
                   </li>
-                )}
-                {isAuthenticated && (
-                  <li>
-                    <Link 
-                      className="nav-link flex items-center"
-                      to="/orders"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <i className="bi bi-bag-check mr-2"></i>
-                      My Orders
-                    </Link>
+                  
+                  {/* Categories Dropdown */}
+                  <li className="relative">
+                    <button 
+                      onClick={() => setOpenDropdown(openDropdown === 'categories' ? null : 'categories')}
+                      className="text-muted-foreground hover:text-accent-foreground duration-150 flex items-center">
+                      Categories
+                      <svg className={cn(
+                        "w-4 h-4 ml-1 transition-transform duration-200",
+                        openDropdown === 'categories' && "rotate-180"
+                      )} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {openDropdown === 'categories' && (
+                      <ul className="absolute left-0 mt-2 w-52 opacity-100 visible z-50 bg-background border rounded-lg shadow-lg">
+                        <li>
+                          <button
+                            className={cn(
+                              "w-full text-left px-4 py-2 text-sm rounded-t-lg hover:bg-muted",
+                              selectedCategoryProp === "" && "font-bold"
+                            )}
+                            onClick={() => handleCategorySelect("")}>
+                            All Categories
+                          </button>
+                        </li>
+                        <li><hr className="border-gray-200 dark:border-gray-600" /></li>
+                        {categories.map((category) => (
+                          <li key={category}>
+                            <button
+                              className={cn(
+                                "w-full text-left px-4 py-2 text-sm hover:bg-muted",
+                                selectedCategoryProp === category && "font-bold"
+                              )}
+                              onClick={() => handleCategorySelect(category)}>
+                              {category}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
-                )}
-                {isAuthenticated && isAdminOrSeller && (
-                  <li>
-                    <Link 
-                      className="nav-link flex items-center"
-                      to="/admin/orders"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <i className="bi bi-clipboard-data mr-2"></i>
-                      Manage Orders
-                    </Link>
-                  </li>
-                )}
+                </ul>
+              </div>
+            </div>
 
-                {/* Categories dropdown */}
-                <li className="relative group">
-                  <button
-                    className="nav-link flex items-center"
-                    type="button"
-                  >
-                    Categories
-                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            {/* Right Section - Search, Theme, Cart, Auth */}
+            <div className={cn(
+              'bg-background lg:bg-transparent mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent',
+              menuState && 'block'
+            )}>
+              
+              {/* Mobile Navigation Menu */}
+              <div className="lg:hidden w-full">
+                <ul className="space-y-6 text-base">
+                  <li>
+                    <Link to="/" className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                      onClick={() => setMenuState(false)}>
+                      Home
+                    </Link>
+                  </li>
+                  {isAuthenticated && isAdminOrSeller && (
+                    <li>
+                      <Link to="/add_product" className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                        onClick={() => setMenuState(false)}>
+                        Add Product
+                      </Link>
+                    </li>
+                  )}
+                  {isAuthenticated && (
+                    <li>
+                      <Link to="/orders" className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                        onClick={() => setMenuState(false)}>
+                        My Orders
+                      </Link>
+                    </li>
+                  )}
+                  {isAuthenticated && isAdminOrSeller && (
+                    <li>
+                      <Link to="/admin/orders" className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                        onClick={() => setMenuState(false)}>
+                        Manage Orders
+                      </Link>
+                    </li>
+                  )}
+                  <li>
+                    <button className="text-muted-foreground hover:text-accent-foreground block duration-150 w-full text-left"
+                      onClick={() => setOpenDropdown(openDropdown === 'mobile-categories' ? null : 'mobile-categories')}>
+                      Categories
+                      <svg className={cn(
+                        "w-4 h-4 inline ml-2 transition-transform duration-200",
+                        openDropdown === 'mobile-categories' && "rotate-180"
+                      )} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {openDropdown === 'mobile-categories' && (
+                      <ul className="mt-3 space-y-2 pl-4 border-l border-gray-300 dark:border-gray-600">
+                        <li>
+                          <button
+                            className={cn(
+                              "text-sm text-muted-foreground hover:text-accent-foreground",
+                              selectedCategoryProp === "" && "font-bold"
+                            )}
+                            onClick={() => handleCategorySelect("")}>
+                            All Categories
+                          </button>
+                        </li>
+                        {categories.map((category) => (
+                          <li key={category}>
+                            <button
+                              className={cn(
+                                "text-sm text-muted-foreground hover:text-accent-foreground",
+                                selectedCategoryProp === category && "font-bold"
+                              )}
+                              onClick={() => handleCategorySelect(category)}>
+                              {category}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                </ul>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative w-full lg:w-72">
+                <form onSubmit={handleSearchSubmit} className="flex">
+                  <input
+                    className="w-full px-4 py-2 text-sm rounded-lg border bg-background"
+                    type="search"
+                    placeholder="Search products..."
+                    value={input}
+                    onChange={(e) => handleChange(e.target.value)}
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                  />
+                  <button className="ml-2 px-4 py-2 text-sm" type="submit">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </button>
-                  
-                  <ul className="dropdown-panel absolute left-0 mt-1 w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <li>
-                      <button
-                        className={`nav-link w-full justify-start rounded-t-md ${
-                          selectedCategoryProp === "" ? "font-bold" : "font-normal"
-                        }`}
-                        onClick={() => {
-                          handleCategorySelect("");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        All Categories
-                      </button>
-                    </li>
-                    <li><hr className="border-gray-200 dark:border-gray-600" /></li>
-                    {categories.map((category) => (
-                      <li key={category}>
-                        <button
-                          className={`nav-link w-full justify-start ${
-                            selectedCategoryProp === category ? "font-bold" : "font-normal"
-                          }`}
-                          onClick={() => {
-                            handleCategorySelect(category);
-                            setIsMenuOpen(false);
-                          }}
-                        >
-                          {category}
-                        </button>
-                      </li>
-                    ))}
+                </form>
+                
+                {/* Search Results Dropdown */}
+                {showSearchResults && (searchFocused || showSearchResults) && (
+                  <ul className="absolute top-full left-0 right-0 mt-2 max-h-80 overflow-y-auto z-50 bg-background border rounded-lg shadow-lg">
+                    {searchResults.length > 0 ? (
+                      <>
+                        <li className="px-4 py-2 text-xs text-muted">
+                          Click a product to view details, or press Enter to search all
+                        </li>
+                        {searchResults.slice(0, 5).map((result) => (
+                          <li key={result.id} className="border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                            <button
+                              className="w-full text-left px-4 py-3 hover:bg-muted transition-colors"
+                              onClick={() => handleSearchResultClick(result.id)}>
+                              <div className="font-medium text-sm">{result.name}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">{result.brand}</div>
+                            </button>
+                          </li>
+                        ))}
+                        {searchResults.length > 5 && (
+                          <li className="px-4 py-2 text-xs text-muted">
+                            {searchResults.length - 5} more results... Press Enter to see all
+                          </li>
+                        )}
+                      </>
+                    ) : (
+                      noResults && (
+                        <li className="px-4 py-3">
+                          <p className="text-red-500 text-center text-sm">No Product with such Name</p>
+                        </li>
+                      )
+                    )}
                   </ul>
-                </li>
-              </ul>
+                )}
+              </div>
 
-              {/* Right side content */}
-              <div className="flex flex-col lg:flex-row lg:items-center lg:ml-auto space-y-4 lg:space-y-0 lg:space-x-4 mt-4 lg:mt-0">
-                {/* Theme toggle */}
-                <button 
-                  className="icon-button self-end lg:self-auto"
-                  onClick={() => toggleTheme()}
-                >
+              {/* Right Actions */}
+              <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit items-start lg:items-center">
+                
+                {/* Theme Toggle */}
+                <button className="p-2 hover:bg-muted rounded-lg transition-colors"
+                  onClick={toggleTheme}>
                   {theme === "dark" ? (
-                    <i className="bi bi-moon-fill text-lg"></i>
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21.64,13a1,1,0,0,0-1.05-.14,8,8,0,0,1-3.52.92,8.07,8.07,0,0,1-8-8,8.3,8.3,0,0,1,.54-2A1,1,0,0,0,8,2.36a10,10,0,0,0,14,9.88A1,1,0,0,0,21.64,13Z" />
+                    </svg>
                   ) : (
-                    <i className="bi bi-sun-fill text-lg"></i>
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12,18A6,6,0,1,1,18,12,6,6,0,0,1,12,18Zm0-10A4,4,0,1,0,16,12,4,4,0,0,0,12,8Zm5-3h0a1,1,0,0,0-1-1H15a1,1,0,0,0,0,2h1A1,1,0,0,0,17,5Zm4,7H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2ZM4,12a1,1,0,0,0-1-1H2a1,1,0,0,0,0,2H3A1,1,0,0,0,4,12ZM7,5A1,1,0,0,0,8,4H9A1,1,0,0,0,9,2H8A1,1,0,0,0,7,5Zm0,14a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0v-1A1,1,0,0,0,7,19ZM5.64,7.05a1,1,0,0,0,.7.3,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12.72,12.72a1,1,0,0,0-.71.29,1,1,0,0,0,0,1.41l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41Z" />
+                    </svg>
                   )}
                 </button>
 
-                {/* Search */}
-                <div className="relative min-w-72">
-                  <form onSubmit={handleSearchSubmit} className="flex">
-                    <input
-                      className="search-input"
-                      type="search"
-                      placeholder="Search products..."
-                      value={input}
-                      onChange={(e) => handleChange(e.target.value)}
-                      onFocus={() => setSearchFocused(true)}
-                      onBlur={() => {
-                        setTimeout(() => setSearchFocused(false), 200);
-                      }}
-                    />
+                {/* Cart */}
+                <Link to="/cart" className="text-sm font-medium hover:text-accent-foreground duration-150 flex items-center"
+                  onClick={() => setMenuState(false)}>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  Cart
+                </Link>
+
+                {/* Auth Section */}
+                {isAuthenticated ? (
+                  <div className="relative w-full sm:w-auto">
                     <button 
-                      className="search-button"
-                      type="submit"
-                    >
-                      <i className="bi bi-search"></i>
+                      onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                      className="w-full sm:w-auto border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center sm:justify-start transition-colors">
+                      {user?.username || "User"}
+                      <svg className={cn(
+                        "w-4 h-4 ml-1 transition-transform duration-200",
+                        userDropdownOpen && "rotate-180"
+                      )} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
                     </button>
-                  </form>
-                  
-                  {/* Search results dropdown */}
-                  {showSearchResults && (searchFocused || showSearchResults) && (
-                    <ul className="dropdown-panel absolute top-full left-0 right-0 mt-1 max-h-80 overflow-y-auto z-50">
-                      {searchResults.length > 0 ? (
-                        <>
-                          <li className="px-4 py-2 text-sm text-muted">
-                            Click a product to view details, or press Enter to search all products
-                          </li>
-                          {searchResults.slice(0, 5).map((result) => (
-                            <li key={result.id} className="border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-                              <button
-                                className="nav-link w-full justify-start py-3"
-                                onClick={() => handleSearchResultClick(result.id)}
-                              >
-                                <div className="font-medium">{result.name}</div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">{result.brand}</div>
-                              </button>
-                            </li>
-                          ))}
-                          {searchResults.length > 5 && (
-                            <li className="px-4 py-2 text-sm text-muted">
-                              {searchResults.length - 5} more results... Press Enter to see all
-                            </li>
-                          )}
-                        </>
-                      ) : (
-                        noResults && (
-                          <li className="px-4 py-3">
-                            <p className="text-red-500 text-center mb-0">
-                              No Product with such Name
-                            </p>
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center space-x-3">
-                  <Link 
-                    to="/cart" 
-                    className="nav-link flex items-center"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <i className="bi bi-cart mr-2"></i>
-                    Cart
-                  </Link>
-
-                  {/* Auth section */}
-                  {isAuthenticated ? (
-                    <div className="relative group">
-                      <button
-                        className="nav-link border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center"
-                        type="button"
-                      >
-                        {user?.username || "User"}
-                        <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                      <ul className="dropdown-panel absolute right-0 mt-1 w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    {userDropdownOpen && (
+                      <ul className="absolute right-0 mt-2 w-52 z-50 bg-background border rounded-lg shadow-lg">
                         <li>
-                          <Link 
-                            className="nav-link w-full justify-start rounded-t-md" 
-                            to="/profile"
-                            onClick={() => setIsMenuOpen(false)}
-                          >
+                          <Link to="/profile" className="block w-full text-left px-4 py-2 text-sm hover:bg-muted rounded-t-lg"
+                            onClick={() => {
+                              setMenuState(false);
+                              setUserDropdownOpen(false);
+                            }}>
                             Profile
                           </Link>
                         </li>
                         <li><hr className="border-gray-200 dark:border-gray-600" /></li>
                         <li>
-                          <button
-                            className="nav-link w-full justify-start rounded-b-md"
-                            onClick={handleLogout}
-                          >
+                          <button className="block w-full text-left px-4 py-2 text-sm hover:bg-muted rounded-b-lg"
+                            onClick={handleLogout}>
                             Logout
                           </button>
                         </li>
                       </ul>
-                    </div>
-                  ) : (
-                    <div className="flex space-x-2">
-                      <Link 
-                        to="/login" 
-                        className="nav-link border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Login
-                      </Link>
-                      <Link 
-                        to="/register" 
-                        className="nav-link bg-blue-600 text-white hover:bg-blue-700"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Register
-                      </Link>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex w-full sm:w-auto gap-3">
+                    <Link to="/login" className="flex-1 sm:flex-none border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-sm font-medium text-center transition-colors"
+                      onClick={() => setMenuState(false)}>
+                      Login
+                    </Link>
+                    <Link to="/register" className="flex-1 sm:flex-none bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium text-center transition-colors"
+                      onClick={() => setMenuState(false)}>
+                      Register
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        </nav>
-      </header>
-    </>
+        </div>
+      </nav>
+    </header>
   );
 };
 

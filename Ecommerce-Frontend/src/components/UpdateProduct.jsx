@@ -126,135 +126,145 @@ const UpdateProduct = () => {
   
 
   return (
-    <div className="update-product-container" >
-      <div className="center-container"style={{marginTop:"7rem"}}>
-        <h1>Update Product</h1>
-        <form className="row g-3 pt-1" onSubmit={handleSubmit}>
-          <div className="col-md-6">
-            <label className="form-label">
-              <h6>Name</h6>
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder={product.name}
-              value={updateProduct.name}
-              onChange={handleChange}
-              name="name"
-            />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" style={{marginTop:"7rem"}}>
+        <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-8 py-6">
+            <h1 className="text-3xl font-bold text-white">Update Product</h1>
           </div>
-          <div className="col-md-6">
-            <label className="form-label">
-              <h6>Brand</h6>
-            </label>
-            <input
-              type="text"
-              name="brand"
-              className="form-control"
-              placeholder={product.brand}
-              value={updateProduct.brand}
-              onChange={handleChange}
-              id="brand"
-            />
-          </div>
-          <div className="col-12">
-            <label className="form-label">
-              <h6>Description</h6>
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder={product.description}
-              name="description"
-              onChange={handleChange}
-              value={updateProduct.description}
-              id="description"
-            />
-          </div>
-          <div className="col-5">
-            <label className="form-label">
-              <h6>Price</h6>
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              onChange={handleChange}
-              value={updateProduct.price}
-              placeholder={product.price}
-              name="price"
-              id="price"
-            />
-          </div>
-          <div className="col-md-6">
-            <label className="form-label">
-              <h6>Category</h6>
-            </label>
-            <select
-              className="form-select"
-              value={updateProduct.category}
-              onChange={handleChange}
-              name="category"
-              id="category"
-            >
-              <option value="">Select category</option>
-              <option value="laptop">Laptop</option>
-              <option value="headphone">Headphone</option>
-              <option value="mobile">Mobile</option>
-              <option value="electronics">Electronics</option>
-              <option value="toys">Toys</option>
-              <option value="fashion">Fashion</option>
-            </select>
-          </div>
-
-          <div className="col-md-4">
-            <label className="form-label">
-              <h6>Stock Quantity</h6>
-            </label>
-            <input
-              type="number"
-              className="form-control"
-              onChange={handleChange}
-              placeholder={product.stockQuantity}
-              value={updateProduct.stockQuantity}
-              name="stockQuantity"
-              id="stockQuantity"
-            />
-          </div>
-          <div className="col-md-8">
-            <label className="form-label">
-              <h6>Image</h6>
-            </label>
-            <img
-              src={imagePreview ? imagePreview : (image ? URL.createObjectURL(image) : "")}
-              alt={product.imageName}
-              style={{
-                width: "100%",
-                height: "180px",
-                objectFit: "cover",
-                padding: "5px",
-                margin: "0",
-              }}
-            />
-            <input
-              className="form-control"
-              type="file"
-              onChange={handleImageChange}
-              placeholder="Upload image"
-              name="imageUrl"
-              id="imageUrl"
-            />
-            {imageErrors.length > 0 && (
-              <div className="mt-2 text-danger">
-                {imageErrors.map((err, idx) => (
-                  <div key={idx}>{err}</div>
-                ))}
+          
+          <form className="p-8 space-y-6" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Product Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  placeholder={product.name}
+                  value={updateProduct.name}
+                  onChange={handleChange}
+                  name="name"
+                />
               </div>
-            )}
-          </div>
-          <div className="col-12">
-            <div className="form-check">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Brand
+                </label>
+                <input
+                  type="text"
+                  name="brand"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  placeholder={product.brand}
+                  value={updateProduct.brand}
+                  onChange={handleChange}
+                  id="brand"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Description
+              </label>
               <input
-                className="form-check-input"
+                type="text"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                placeholder={product.description}
+                name="description"
+                onChange={handleChange}
+                value={updateProduct.description}
+                id="description"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Price ($)
+                </label>
+                <input
+                  type="number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  onChange={handleChange}
+                  value={updateProduct.price}
+                  placeholder={product.price}
+                  name="price"
+                  id="price"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  value={updateProduct.category}
+                  onChange={handleChange}
+                  name="category"
+                  id="category"
+                >
+                  <option value="">Select category</option>
+                  <option value="laptop">Laptop</option>
+                  <option value="headphone">Headphone</option>
+                  <option value="mobile">Mobile</option>
+                  <option value="electronics">Electronics</option>
+                  <option value="toys">Toys</option>
+                  <option value="fashion">Fashion</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Stock Quantity
+                </label>
+                <input
+                  type="number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  onChange={handleChange}
+                  placeholder={product.stockQuantity}
+                  value={updateProduct.stockQuantity}
+                  name="stockQuantity"
+                  id="stockQuantity"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Product Image
+              </label>
+              <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300">
+                {(imagePreview || image) && (
+                  <div className="mb-4">
+                    <img
+                      src={imagePreview ? imagePreview : (image ? URL.createObjectURL(image) : "")}
+                      alt={product.imageName}
+                      className="w-full h-48 object-cover rounded-lg shadow-md"
+                    />
+                  </div>
+                )}
+                <input
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  type="file"
+                  onChange={handleImageChange}
+                  placeholder="Upload image"
+                  name="imageUrl"
+                  id="imageUrl"
+                />
+                {imageErrors.length > 0 && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    {imageErrors.map((err, idx) => (
+                      <div key={idx} className="text-red-700 text-sm">{err}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <input
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                 type="checkbox"
                 name="productAvailable"
                 id="gridCheck"
@@ -263,16 +273,21 @@ const UpdateProduct = () => {
                   setUpdateProduct({ ...updateProduct, productAvailable: e.target.checked })
                 }
               />
-              <label className="form-check-label">Product Available</label>
+              <label className="text-sm font-medium text-gray-700" htmlFor="gridCheck">
+                Product Available for Purchase
+              </label>
             </div>
-          </div>
 
-          <div className="col-12">
-            <button type="submit" className="btn btn-primary">
-              Submit
-            </button>
-          </div>
-        </form>
+            <div className="pt-4 border-t border-gray-200">
+              <button 
+                type="submit" 
+                className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                Update Product
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
