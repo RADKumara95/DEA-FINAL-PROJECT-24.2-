@@ -13,6 +13,7 @@ This is a full-featured e-commerce web application that provides a seamless shop
 - **Comprehensive CRUD**: Complete product and order management
 - **Modern UI/UX**: Responsive design with Bootstrap 5
 - **RESTful APIs**: Well-documented APIs with Swagger integration
+- **Docker Support**: Containerized deployment with Docker & Docker Compose
 - **Production Ready**: Comprehensive validation, error handling, and testing
 
 ## 🛠 Technology Stack
@@ -26,12 +27,12 @@ This is a full-featured e-commerce web application that provides a seamless shop
 | **Spring Data JPA** | 3.x | Data persistence layer |
 | **Spring Validation** | 3.x | Input validation |
 | **Spring Mail** | 3.x | Email notifications |
-| **MySQL** | 8.x | Production database |
-| **H2** | 2.x | Development database |
-| **PostgreSQL** | 15.x | Alternative production database |
+| **MySQL** | 8.0+ | Primary database |
+| **H2** | 2.x | Development/Testing database |
 | **OpenAPI/Swagger** | 2.3.0 | API documentation |
 | **Lombok** | Latest | Code generation |
-| **Maven** | 3.x | Build tool |
+| **Maven** | 3.x | Build tool (primary) |
+| **Gradle** | 8.x | Build tool (alternative) |
 
 ### Frontend
 | Technology | Version | Purpose |
@@ -44,6 +45,12 @@ This is a full-featured e-commerce web application that provides a seamless shop
 | **React Bootstrap** | 2.10.2 | Bootstrap components for React |
 | **React Icons** | 5.2.0 | Icon library |
 | **ESLint** | 8.57.0 | Code linting |
+
+### DevOps
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Docker** | 24.x | Container platform |
+| **Docker Compose** | 2.x | Multi-container orchestration |
 
 ## ✨ Features
 
@@ -261,11 +268,131 @@ DEA-FINAL-PROJECT-24.2-/
 ### Prerequisites
 - **Java 21** or higher (LTS version recommended)
 - **Node.js 18+** and npm
-- **MySQL 8.0+** or **PostgreSQL 15+** (for production)
-- **Maven 3.6+** (or use included Maven wrapper)
+- **MySQL 8.0+** (for production)
+- **Maven 3.6+** OR **Gradle 8.x** (or use included wrappers)
 - **Git** for version control
+- **Docker 24+** and **Docker Compose 2.x** (optional, for containerized deployment)
 
-### Backend Setup
+### Quick Start with Docker (Recommended)
+
+This is the easiest way to get the entire application running with a single command.
+
+#### Prerequisites for Docker Setup
+- Docker Desktop installed and running
+- Docker Compose v2.x
+
+#### Steps
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/RADKumara95/DEA-FINAL-PROJECT-24.2-.git
+   cd DEA-FINAL-PROJECT-24.2-
+   ```
+
+2. **Create Environment File**
+   ```bash
+   cat > .env << EOF
+   # Database Configuration
+   MYSQL_ROOT_PASSWORD=root123
+   MYSQL_DATABASE=ecommerce_db
+   MYSQL_USER=ecommerce_user
+   MYSQL_PASSWORD=ecommerce_pass
+   
+   # Backend Configuration
+   SPRING_PROFILES_ACTIVE=docker
+   DB_HOST=mysql
+   DB_PORT=3306
+   DB_NAME=ecommerce_db
+   DB_USER=ecommerce_user
+   DB_PASSWORD=ecommerce_pass
+   EOF
+   ```
+
+3. **Run with Docker Compose**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Verify Services**
+   ```bash
+   # Check all containers are running
+   docker-compose ps
+   
+   # View logs
+   docker-compose logs -f
+   
+   # Backend logs only
+   docker-compose logs -f backend
+   
+   # Frontend logs only
+   docker-compose logs -f frontend
+   ```
+
+5. **Access the Application**
+   - **Frontend**: `http://localhost:5173`
+   - **Backend API**: `http://localhost:8080/api`
+   - **Swagger UI**: `http://localhost:8080/swagger-ui.html`
+   - **MySQL Database**: `localhost:3306` (user: `ecommerce_user`, password: `ecommerce_pass`)
+
+6. **Stop the Application**
+   ```bash
+   docker-compose down
+   
+   # Remove volumes to reset database
+   docker-compose down -v
+   ```
+
+#### Docker Compose Services
+
+The `docker-compose.yml` includes:
+- **MySQL 8.0**: Database service on port 3306
+- **Backend (Spring Boot)**: API service on port 8080
+- **Frontend (React + Vite)**: UI service on port 5173
+
+All services communicate through an internal Docker network.
+
+#### Troubleshooting Docker Setup
+
+**1. Port Already in Use**
+```bash
+# If ports are already in use, modify docker-compose.yml
+# Change port mappings before running
+# e.g., 8081:8080 for backend (external:internal)
+docker-compose down
+docker-compose up -d
+```
+
+**2. Database Connection Failed**
+```bash
+# Wait for MySQL to initialize (usually 15-30 seconds)
+docker-compose logs mysql
+# Look for "MySQL init process done"
+
+# Restart services if connection fails
+docker-compose restart backend
+```
+
+**3. Image Build Issues**
+```bash
+# Rebuild images without cache
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+**4. View Database Contents**
+```bash
+# Connect to MySQL container
+docker exec -it ecom_mysql mysql -u ecommerce_user -p ecommerce_db
+# Enter password: ecommerce_pass
+```
+
+---
+
+### Local Development Setup (Without Docker)
+
+If you prefer to run services locally without Docker:
+
+#### Backend Setup
 
 1. **Clone the Repository**
    ```bash
@@ -291,7 +418,7 @@ DEA-FINAL-PROJECT-24.2-/
    ```properties
    # application-prod.properties
    spring.datasource.url=jdbc:mysql://localhost:3306/ecommerce_db?createDatabaseIfNotExist=true
-   spring.datasource.username=your_username
+   spring.datasource.username=ecommerce_user
    spring.datasource.password=your_password
    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
    spring.jpa.hibernate.ddl-auto=update
@@ -305,7 +432,7 @@ DEA-FINAL-PROJECT-24.2-/
    export EMAIL_PASSWORD=your_app_password
    ```
 
-5. **Build and Run**
+5. **Build and Run with Maven**
    ```bash
    # Using Maven wrapper (recommended)
    ./mvnw clean install
@@ -319,12 +446,26 @@ DEA-FINAL-PROJECT-24.2-/
    ./mvnw spring-boot:run -Dspring.profiles.active=prod
    ```
 
+   **OR Build and Run with Gradle**
+   ```bash
+   # Using Gradle wrapper
+   ./gradlew clean build
+   ./gradlew bootRun
+   
+   # Or using Gradle directly
+   gradle clean build
+   gradle bootRun
+   
+   # For production profile
+   ./gradlew bootRun --args='--spring.profiles.active=prod'
+   ```
+
 6. **Verify Backend**
    - API Base URL: `http://localhost:8080/api`
    - Swagger UI: `http://localhost:8080/swagger-ui.html`
    - H2 Console: `http://localhost:8080/h2-console` (development only)
 
-### Frontend Setup
+#### Frontend Setup
 
 1. **Navigate to Frontend Directory**
    ```bash
@@ -351,16 +492,32 @@ DEA-FINAL-PROJECT-24.2-/
    - Application URL: `http://localhost:5173`
    - Hot reload enabled for development
 
-### Production Build
+### Production Build (Docker)
 
-**Backend:**
+**Build Custom Docker Images:**
+```bash
+# Build backend image
+docker build -t ecommerce-backend:latest ./Ecommerce-Backend
+
+# Build frontend image
+docker build -t ecommerce-frontend:latest ./Ecommerce-Frontend
+
+# Run with custom images
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+**Local Production Build:**
+
+Backend:
 ```bash
 cd Ecommerce-Backend
 ./mvnw clean package -Pprod
-java -jar target/ecom-proj-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+# or with Gradle
+./gradlew clean build -Pprod
+java -jar build/libs/ecom-proj-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 ```
 
-**Frontend:**
+Frontend:
 ```bash
 cd Ecommerce-Frontend
 npm run build
@@ -369,42 +526,16 @@ npm run preview  # Test production build locally
 
 ## 📚 API Documentation
 
-### Swagger/OpenAPI
-When the backend is running, comprehensive API documentation is available at:
+Comprehensive API documentation is available in the [API.md](./API.md) file.
+
+### Quick API Access
+
+When the backend is running, you can access:
 - **Swagger UI**: `http://localhost:8080/swagger-ui.html`
 - **OpenAPI JSON**: `http://localhost:8080/api-docs`
+- **API Documentation**: [API.md](./API.md)
 
-### Key API Endpoints
-
-#### Authentication Endpoints
-```
-POST /api/auth/register     - User registration
-POST /api/auth/login        - User login  
-POST /api/auth/logout       - User logout
-GET  /api/auth/me           - Get current user
-PUT  /api/auth/profile      - Update user profile
-```
-
-#### Product Endpoints
-```
-GET    /api/products                - Get all products (paginated)
-GET    /api/product/{id}            - Get product by ID
-POST   /api/product                 - Create product (Admin/Seller)
-PUT    /api/product/{id}            - Update product (Admin/Seller)  
-DELETE /api/product/{id}            - Delete product (Admin)
-GET    /api/products/search         - Search products
-GET    /api/product/{id}/image      - Get product image
-```
-
-#### Order Endpoints
-```
-POST   /api/orders                  - Create new order
-GET    /api/orders                  - Get user's orders (paginated)
-GET    /api/orders/{id}             - Get order details
-PUT    /api/orders/{id}/cancel      - Cancel order
-GET    /api/admin/orders            - Get all orders (Admin)
-PUT    /api/admin/orders/{id}/status - Update order status (Admin)
-```
+## 🐛 Troubleshooting
 
 ## 👥 Team Members
 
@@ -449,12 +580,51 @@ This software is developed for educational purposes. Redistribution or commercia
 
 ### Common Issues and Solutions
 
+#### Docker Issues
+
+**1. Containers Fail to Start**
+```bash
+# Check logs for errors
+docker-compose logs backend
+docker-compose logs frontend
+docker-compose logs mysql
+
+# Rebuild and restart
+docker-compose down -v
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+**2. Database Connection Timeout**
+```bash
+# MySQL may need more time to initialize
+# Wait 30 seconds and restart backend
+docker-compose restart backend
+
+# Verify MySQL is healthy
+docker ps
+# Check STATUS should show (healthy)
+```
+
+**3. Frontend Can't Reach Backend**
+```bash
+# Ensure backend container is running
+docker-compose ps
+
+# Check backend logs
+docker-compose logs backend
+
+# Verify networking
+docker network ls
+docker network inspect <network_name>
+```
+
 #### Backend Issues
 
 **1. Database Connection Error**
 ```bash
 # Error: Cannot create connection to database
-# Solution: Check database credentials and ensure MySQL/PostgreSQL is running
+# Solution: Check database credentials and ensure MySQL is running
 systemctl start mysql  # Linux
 brew services start mysql  # macOS
 ```
@@ -462,7 +632,7 @@ brew services start mysql  # macOS
 **2. Port Already in Use (8080)**
 ```bash
 # Error: Port 8080 is already in use
-# Solution: Change port in application.properties
+# Solution: Change port in application.properties or docker-compose.yml
 server.port=8081
 ```
 
@@ -474,7 +644,16 @@ java --version
 export JAVA_HOME=/path/to/java21
 ```
 
-**4. Email Service Error**
+**4. Maven vs Gradle Confusion**
+```bash
+# If build fails with Maven, try Gradle wrapper
+./gradlew clean build
+
+# Ensure only one build tool is used
+# Remove pom.xml or build.gradle if switching build systems
+```
+
+**5. Email Service Error**
 ```bash
 # Error: Mail server connection failed  
 # Solution: Configure Gmail app password
@@ -533,7 +712,7 @@ FLUSH PRIVILEGES;
 **3. Data Not Persisting**
 ```bash
 # Issue: Using H2 in-memory database
-# Solution: Switch to MySQL/PostgreSQL for persistence
+# Solution: Switch to MySQL for persistence
 # Update application.properties with persistent database configuration
 ```
 
@@ -549,6 +728,16 @@ FLUSH PRIVILEGES;
 - Optimize images and assets
 - Remove unused dependencies
 
+**3. Docker Performance**
+```bash
+# Limit resource usage
+docker-compose down
+
+# Update docker-compose.yml with resource limits
+# Then restart
+docker-compose up -d
+```
+
 ### Getting Help
 
 1. **Check Logs**: Always check console logs for detailed error messages
@@ -556,6 +745,7 @@ FLUSH PRIVILEGES;
 3. **Database State**: Verify data integrity using H2 console or MySQL Workbench
 4. **Network Issues**: Use browser dev tools to inspect HTTP requests/responses
 5. **Clear Browser Cache**: Try incognito mode for frontend issues
+6. **Docker Debugging**: Use `docker exec` to inspect containers
 
 **Contact Information:**
 - **Project Repository**: [GitHub Issues](https://github.com/RADKumara95/DEA-FINAL-PROJECT-24.2-/issues)

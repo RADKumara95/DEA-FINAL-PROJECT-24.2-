@@ -1,5 +1,93 @@
 # E-commerce Platform API Documentation
 
+## Quick Access to API Documentation
+
+### 🔍 Swagger UI (Interactive API Documentation)
+
+The easiest way to explore and test the API is through the **Swagger UI** - an interactive web interface that allows you to test endpoints directly from your browser.
+
+**Access Swagger UI:**
+```
+http://localhost:8080/swagger-ui.html
+```
+
+**Features:**
+- View all available endpoints organized by resource type
+- See request/response schemas for each endpoint
+- Test endpoints directly with the "Try it out" button
+- View parameter documentation and validation rules
+- See HTTP status codes and error responses
+- Download OpenAPI JSON specification
+
+**Steps to Use Swagger:**
+1. Start the backend application (`./mvnw spring-boot:run` or `./gradlew bootRun`)
+2. Open your browser and navigate to `http://localhost:8080/swagger-ui.html`
+3. You'll see all API endpoints grouped by controller
+4. Click on an endpoint to expand its details
+5. Click "Try it out" to test the endpoint
+6. Fill in required parameters and execute the request
+7. View the response in the "Response" section
+
+### 📮 Postman Collection
+
+For more advanced testing and automation, use the **Postman Collection** included in the project.
+
+**Location:** `/Ecommerce-Backend/Postman_Collection.json`
+
+**How to Import into Postman:**
+
+1. **Download Postman** (if not already installed)
+   - Visit: https://www.postman.com/downloads/
+   - Choose your OS and install
+
+2. **Import the Collection**
+   - Open Postman
+   - Click **Import** button (top left)
+   - Choose **File** tab
+   - Navigate to `Ecommerce-Backend/Postman_Collection.json`
+   - Select and click **Import**
+
+3. **Configure Base URL**
+   - In Postman, locate the **Variables** section in the imported collection
+   - Set `baseUrl` to `http://localhost:8080`
+   - Save changes
+
+4. **Authenticate (if needed)**
+   - Login first using the "Login User" request in the Authentication folder
+   - Postman will store session cookies automatically
+   - Use authenticated requests to test protected endpoints
+
+**Collection Structure:**
+- **Authentication**: Register, Login, Logout, Get Current User, Update Profile
+- **Products**: CRUD operations, Search, Advanced Search, Filter, Image handling
+- **Orders**: Create, View, Cancel, Admin operations (status update, delete)
+
+**Advantages of Postman:**
+- Test entire workflows sequentially
+- Store multiple requests organized in folders
+- Save request/response examples
+- Create automated test suites
+- Generate code snippets in multiple languages
+- Share collections with team members
+- Monitor API performance with built-in tools
+
+### 📖 OpenAPI/Swagger Specification
+
+Access the raw OpenAPI specification in JSON format:
+
+```
+http://localhost:8080/api-docs
+```
+
+**Uses:**
+- Generate API documentation automatically
+- Generate client SDKs
+- Validate API requests/responses
+- Create API documentation portals
+- Integrate with third-party tools
+
+---
+
 ## Table of Contents
 - [Overview](#overview)
 - [Base URL](#base-url)
@@ -9,21 +97,25 @@
 - [Authentication Endpoints](#authentication-endpoints)
 - [Product Endpoints](#product-endpoints)
 - [Order Endpoints](#order-endpoints)
+- [User Management Endpoints](#user-management-endpoints)
+- [Admin Endpoints](#admin-endpoints)
 - [Data Models](#data-models)
 - [Status Codes](#status-codes)
 - [Examples](#examples)
 
 ## Overview
 
-This API provides endpoints for managing an e-commerce platform with user authentication, product management, and order processing capabilities. The API follows RESTful principles and uses JSON for data exchange.
+This API provides endpoints for managing an e-commerce platform with user authentication, product management, order processing, and user management capabilities. The API follows RESTful principles and uses JSON for data exchange.
 
 ### API Features
 - **User Authentication**: Registration, login, logout, and profile management
 - **Product Management**: CRUD operations, search, filtering, and image handling
 - **Order Management**: Order creation, tracking, and status updates
+- **User Management**: User profile updates, account management
 - **Role-based Access Control**: Admin, Seller, and Customer roles
 - **Pagination**: Support for paginated responses
 - **File Upload**: Product image upload and retrieval
+- **Comprehensive Documentation**: Swagger/OpenAPI integration
 
 ## Base URL
 
@@ -44,7 +136,7 @@ Accept: application/json
 ### CORS Configuration
 - **Allowed Origins**: `http://localhost:5173`
 - **Credentials**: Supported
-- **Methods**: GET, POST, PUT, DELETE
+- **Methods**: GET, POST, PUT, DELETE, OPTIONS
 
 ## Response Format
 
@@ -94,6 +186,7 @@ Accept: application/json
 | 403 | Forbidden - Insufficient permissions |
 | 404 | Not Found - Resource not found |
 | 409 | Conflict - Duplicate resource |
+| 422 | Unprocessable Entity - Validation error |
 | 500 | Internal Server Error - Server error |
 
 ---
@@ -578,12 +671,63 @@ Cancel an existing order.
 
 **Response:** Updated order object with CANCELLED status
 
+**Error Response:**
+- `404 Not Found` - Order not found
+- `400 Bad Request` - Cannot cancel order (already shipped/delivered)
+
 ---
 
-### Get All Orders (Admin)
-Retrieve all orders in the system (admin/seller only).
+## User Management Endpoints
 
-**Endpoint:** `GET /api/orders/admin/all`
+### Get User Profile
+Get detailed user profile information.
+
+**Endpoint:** `GET /api/users/profile`
+
+**Authentication:** Required
+
+**Response:** `200 OK`
+```json
+{
+  "id": 1,
+  "username": "johndoe",
+  "email": "john@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "phoneNumber": "+1234567890",
+  "roles": ["CUSTOMER"],
+  "createdDate": "2024-01-01T12:00:00"
+}
+```
+
+---
+
+### Update User Profile
+Update user profile information.
+
+**Endpoint:** `PUT /api/users/profile`
+
+**Authentication:** Required
+
+**Request Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "phoneNumber": "+1234567890"
+}
+```
+
+**Response:** `200 OK` - Updated user object
+
+---
+
+## Admin Endpoints
+
+### Get All Orders (Admin)
+Retrieve all orders in the system.
+
+**Endpoint:** `GET /api/admin/orders`
 
 **Authentication:** Required (ADMIN or SELLER role)
 
@@ -592,14 +736,14 @@ Retrieve all orders in the system (admin/seller only).
 - `size` (optional): Page size (default: 10)
 - `status` (optional): Filter by order status
 
-**Response:** Paginated list of all orders
+**Response:** `200 OK` - Paginated list of all orders
 
 ---
 
 ### Update Order Status (Admin)
-Update the status of an order (admin/seller only).
+Update the status of an order.
 
-**Endpoint:** `PUT /api/orders/admin/{id}/status`
+**Endpoint:** `PUT /api/admin/orders/{id}/status`
 
 **Authentication:** Required (ADMIN or SELLER role)
 
@@ -614,21 +758,25 @@ Update the status of an order (admin/seller only).
 }
 ```
 
-**Response:** Updated order object
+**Response:** `200 OK` - Updated order object
+
+**Validation Rules:**
+- status: Must be valid OrderStatus enum value
+- Allowed statuses: PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
 
 ---
 
 ### Delete Order (Admin)
-Delete an order from the system (admin only).
+Delete an order from the system.
 
-**Endpoint:** `DELETE /api/orders/admin/{id}`
+**Endpoint:** `DELETE /api/admin/orders/{id}`
 
 **Authentication:** Required (ADMIN role)
 
 **Path Parameters:**
 - `id`: Order ID
 
-**Response:**
+**Response:** `200 OK`
 ```json
 {
   "message": "Order deleted successfully"
@@ -735,11 +883,13 @@ Delete an order from the system (admin only).
 |------|-------------|-------|
 | 200 | OK | Successful GET, PUT requests |
 | 201 | Created | Successful POST requests |
+| 204 | No Content | Successful DELETE requests |
 | 400 | Bad Request | Invalid input data, validation errors |
 | 401 | Unauthorized | Authentication required or failed |
 | 403 | Forbidden | Insufficient permissions |
 | 404 | Not Found | Resource not found |
 | 409 | Conflict | Duplicate resource (username, email) |
+| 422 | Unprocessable Entity | Validation error with details |
 | 500 | Internal Server Error | Server-side errors |
 
 ## Examples
@@ -818,6 +968,17 @@ curl -X GET "http://localhost:8080/api/products/advanced-search?keyword=laptop&c
   -b cookies.txt
 ```
 
+3. **Update order status (Admin):**
+```bash
+curl -X PUT http://localhost:8080/api/admin/orders/1/status \
+  -H "Content-Type: application/json" \
+  -b cookies.txt \
+  -d '{
+    "status": "SHIPPED",
+    "deliveryDate": "2024-01-05T14:00:00"
+  }'
+```
+
 ---
 
 ## Rate Limiting
@@ -846,6 +1007,19 @@ All list endpoints support pagination with the following parameters:
 - Input validation on all endpoints
 - CORS configured for frontend integration
 - Session-based authentication with secure cookies
+- CSRF protection enabled
+- Password hashing with BCrypt
+
+## Development Notes
+
+- **Base URL**: `http://localhost:8080/api`
+- **Frontend CORS**: `http://localhost:5173`
+- **Database**: MySQL with JPA/Hibernate (H2 for development)
+- **Framework**: Spring Boot 3.x with Spring Security
+- **File Upload**: Multipart form data support
+- **Build Tools**: Maven or Gradle
+
+For more information about setup and installation, see the [README.md](./README.md).
 
 ## Development Notes
 
