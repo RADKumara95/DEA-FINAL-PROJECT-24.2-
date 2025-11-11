@@ -1,0 +1,10 @@
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+
+# Copy the pre-built JAR (must exist in build/libs/)
+COPY build/libs/ecom-proj-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
