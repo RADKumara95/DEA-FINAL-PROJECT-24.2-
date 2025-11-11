@@ -2,6 +2,8 @@
 
 A comprehensive, modern e-commerce platform built with Spring Boot and React.js, featuring secure user authentication, product management, shopping cart functionality, and order processing with role-based access control.
 
+> **🪟 Windows Users:** See [WINDOWS_SETUP.md](./WINDOWS_SETUP.md) for detailed Windows-specific setup instructions and troubleshooting.
+
 ## 📋 Project Overview
 
 This is a full-featured e-commerce web application that provides a seamless shopping experience for customers and comprehensive management tools for administrators. The application follows modern software architecture principles with a clean separation between frontend and backend, comprehensive security implementation, and scalable design patterns.
@@ -329,16 +331,35 @@ This is the easiest way to get the entire application running with a single comm
    ```
 
 5. **Access the Application**
-   - **Frontend**: `http://localhost:5173`
+   - **Frontend**: `http://localhost:3000`
    - **Backend API**: `http://localhost:8080/api`
    - **Swagger UI**: `http://localhost:8080/swagger-ui.html`
-   - **MySQL Database**: `localhost:3306` (user: `ecommerce_user`, password: `ecommerce_pass`)
+   - **MySQL Database**: `localhost:3306` (user: `ecomuser`, password: `ecompassword`)
 
-6. **Stop the Application**
+6. **Verify Dummy Data is Loaded**
+   
+   The application automatically loads dummy data on first startup. You can verify:
+   
+   ```bash
+   # Check backend logs for data initialization
+   docker-compose logs backend | grep "Database initialization completed"
+   ```
+   
+   **Test Accounts (all use password: `password123`):**
+   - `admin@ecommerce.com` - Admin account with full access
+   - `john@example.com` - Regular user account
+   - `jane@example.com` - Regular user account  
+   - `seller@ecommerce.com` - Seller account
+   
+   **Sample Products:** 15 products are pre-loaded across categories (Smartphones, Laptops, Audio, etc.)
+   
+   Login at `http://localhost:3000` with any account to see the products!
+
+7. **Stop the Application**
    ```bash
    docker-compose down
    
-   # Remove volumes to reset database
+   # Remove volumes to reset database and reload dummy data
    docker-compose down -v
    ```
 
