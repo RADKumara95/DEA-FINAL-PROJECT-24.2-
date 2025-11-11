@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "e-commerce-api-collection",
 		"name": "E-Commerce API Collection",
-		"description": "Comprehensive API collection for the E-Commerce Backend application",
+		"description": "Comprehensive API collection for the E-Commerce Backend application.\n\n**Authentication Info:**\n- Admin Username: admin\n- Admin Password: password123\n- Test User Username: testuser (or register new)\n- Test User Password: password123\n\n**How to Use:**\n1. First, run 'Login Admin' or 'Login User' to authenticate\n2. Postman will automatically store the session cookie\n3. Subsequent requests will use the cookie for authentication\n4. Admin endpoints require admin login\n5. User endpoints require user login",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "e-commerce-api"
 	},
@@ -22,7 +22,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\",\n  \"email\": \"test@example.com\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\"\n}"
+							"raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"password\": \"{{testPassword}}\",\n  \"email\": \"test@example.com\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/auth/register",
@@ -50,7 +50,35 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}"
+							"raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/auth/login",
@@ -177,80 +205,6 @@
 					"name": "Get Product by ID",
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/product/1",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"product",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Product",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"Test Product\",\n  \"description\": \"A test product description\",\n  \"price\": 99.99,\n  \"category\": \"Electronics\",\n  \"brand\": \"TestBrand\",\n  \"stockQuantity\": 100,\n  \"availableQuantity\": 100\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/product",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"product"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Product",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"Updated Product\",\n  \"description\": \"Updated description\",\n  \"price\": 129.99,\n  \"category\": \"Electronics\",\n  \"brand\": \"UpdatedBrand\",\n  \"stockQuantity\": 50,\n  \"availableQuantity\": 50\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/product/1",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"product",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Product",
-					"request": {
-						"method": "DELETE",
 						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/api/product/1",
@@ -408,6 +362,85 @@
 			]
 		},
 		{
+			"name": "Admin - Products",
+			"item": [
+				{
+					"name": "Create Product (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Product\",\n  \"description\": \"A test product description\",\n  \"price\": 99.99,\n  \"category\": \"Electronics\",\n  \"brand\": \"TestBrand\",\n  \"stockQuantity\": 100,\n  \"availableQuantity\": 100\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/product",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Product\",\n  \"description\": \"Updated description\",\n  \"price\": 129.99,\n  \"category\": \"Electronics\",\n  \"brand\": \"UpdatedBrand\",\n  \"stockQuantity\": 50,\n  \"availableQuantity\": 50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/product/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/product/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Orders",
 			"item": [
 				{
@@ -507,7 +540,12 @@
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "Admin - Orders",
+			"item": [
 				{
 					"name": "Get All Orders (Admin)",
 					"request": {
@@ -535,7 +573,8 @@
 								},
 								{
 									"key": "status",
-									"value": "PENDING"
+									"value": "PENDING",
+									"description": "Optional: PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED"
 								}
 							]
 						}
@@ -600,6 +639,36 @@
 			"key": "baseUrl",
 			"value": "http://localhost:8080",
 			"type": "string"
+		},
+		{
+			"key": "adminUsername",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "adminPassword",
+			"value": "password123",
+			"type": "string"
+		},
+		{
+			"key": "testUsername",
+			"value": "testuser",
+			"type": "string"
+		},
+		{
+			"key": "testPassword",
+			"value": "password123",
+			"type": "string"
 		}
-	]
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	}
 }
