@@ -1,0 +1,21 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Force LF line endings for shell scripts (critical for Docker on Windows)
+*.sh text eol=lf
+gradlew text eol=lf
+
+# Force CRLF line endings for Windows batch files
+*.bat text eol=crlf
+
+# Binary files
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
