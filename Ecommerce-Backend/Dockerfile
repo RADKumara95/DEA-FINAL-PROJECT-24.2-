@@ -11,8 +11,12 @@ COPY build.gradle .
 COPY settings.gradle .
 COPY gradle.properties .
 
-# Make gradlew executable
-RUN chmod +x gradlew
+# Convert line endings and make gradlew executable (for Windows compatibility)
+RUN apt-get update && apt-get install -y dos2unix && \
+    dos2unix gradlew && \
+    chmod +x gradlew && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Download dependencies (cached layer)
 RUN ./gradlew dependencies --no-daemon
@@ -28,11 +32,21 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
+# Install curl and MySQL client for healthcheck and startup script
+RUN apt-get update && \
+    apt-get install -y curl default-mysql-client && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Copy the built JAR from builder stage
 COPY --from=builder /app/build/libs/ecom-proj-0.0.1-SNAPSHOT.jar app.jar
+
+# Copy and prepare startup script
+COPY startup.sh /app/startup.sh
+RUN chmod +x /app/startup.sh
 
 # Expose port
 EXPOSE 8080
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Use startup script instead of direct java command
+ENTRYPOINT ["/app/startup.sh"]

@@ -374,6 +374,32 @@ All services communicate through an internal Docker network.
 
 #### Troubleshooting Docker Setup
 
+**🪟 Windows Users:** If experiencing backend 500 errors, see [WINDOWS_TROUBLESHOOTING.md](./WINDOWS_TROUBLESHOOTING.md) for comprehensive Windows-specific troubleshooting.
+
+**Windows Quick Fix:**
+```bash
+# Use the Windows helper script
+docker-helper.bat
+
+# Or manually:
+# 1. Stop and clean everything
+docker-compose down -v
+
+# 2. Fix line endings (if needed)
+cd Ecommerce-Backend
+dos2unix gradlew
+# OR using PowerShell:
+# (Get-Content gradlew -Raw) -replace "`r`n", "`n" | Set-Content gradlew -NoNewline
+
+# 3. Rebuild and restart
+cd ..
+docker-compose build --no-cache
+docker-compose up -d
+
+# 4. Check health
+curl http://localhost:8080/actuator/health
+```
+
 **1. Port Already in Use**
 ```bash
 # If ports are already in use, modify docker-compose.yml
@@ -398,6 +424,18 @@ docker-compose restart backend
 # Rebuild images without cache
 docker-compose build --no-cache
 docker-compose up -d
+```
+
+**4. Backend Health Check**
+```bash
+# Check if backend is healthy
+curl http://localhost:8080/actuator/health
+
+# View detailed backend logs
+docker logs ecommerce-backend
+
+# Check for specific errors
+docker logs ecommerce-backend 2>&1 | grep -i error
 ```
 
 **4. View Database Contents**
